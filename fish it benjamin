@@ -7,7 +7,6 @@ local LP = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CharlesHubV2"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = game.CoreGui
 
 ------------------------------------------------
@@ -24,31 +23,29 @@ Main.Parent = ScreenGui
 Main.ZIndex = 10
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
+-- SCALE FIX (INI KUNCI NYA)
+local Scale = Instance.new("UIScale", Main)
+Scale.Scale = math.clamp(workspace.CurrentCamera.ViewportSize.X / 900, 0.75, 1)
+
 ------------------------------------------------
 --// MINI FLOATING WINDOW (🪩 Charles X)
 ------------------------------------------------
 local MiniBtn = Instance.new("TextButton")
 MiniBtn.Parent = ScreenGui
-MiniBtn.Size = UDim2.new(0,180,0,50)
-MiniBtn.Position = UDim2.new(0.5,0,0.2,0)
+MiniBtn.Size = UDim2.new(0,170,0,46)
+MiniBtn.Position = UDim2.new(0.5,0,0.15,0)
 MiniBtn.AnchorPoint = Vector2.new(0.5,0.5)
-MiniBtn.BackgroundColor3 = Color3.fromRGB(130, 205, 255) -- biru muda
+MiniBtn.BackgroundColor3 = Color3.fromRGB(120, 200, 255)
 MiniBtn.Text = "🪩  Charles X"
 MiniBtn.Font = Enum.Font.GothamBold
 MiniBtn.TextSize = 18
-MiniBtn.TextColor3 = Color3.fromRGB(20,20,20)
+MiniBtn.TextColor3 = Color3.fromRGB(15,15,15)
 MiniBtn.Visible = false
 MiniBtn.Active = true
 MiniBtn.Draggable = true
-MiniBtn.AutoButtonColor = true
-MiniBtn.ZIndex = 999999
+MiniBtn.ZIndex = 999
 
-local miniCorner = Instance.new("UICorner", MiniBtn)
-miniCorner.CornerRadius = UDim.new(0,14)
-
-local miniStroke = Instance.new("UIStroke", MiniBtn)
-miniStroke.Color = Color3.fromRGB(40,120,200)
-miniStroke.Thickness = 2
+Instance.new("UICorner", MiniBtn).CornerRadius = UDim.new(0,14)
 
 ------------------------------------------------
 --// TOP BAR
@@ -56,6 +53,7 @@ miniStroke.Thickness = 2
 local Top = Instance.new("Frame", Main)
 Top.Size = UDim2.new(1,0,0,40)
 Top.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Top.ZIndex = 11
 
 local Title = Instance.new("TextLabel", Top)
 Title.Size = UDim2.new(1,-90,1,0)
@@ -66,17 +64,19 @@ Title.TextSize = 15
 Title.TextColor3 = Color3.new(1,1,1)
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
+Title.ZIndex = 12
 
 local BtnHolder = Instance.new("Frame", Top)
 BtnHolder.Size = UDim2.new(0,80,1,0)
 BtnHolder.Position = UDim2.new(1,-85,0,0)
 BtnHolder.BackgroundTransparency = 1
+BtnHolder.ZIndex = 12
 
-local BtnLayout = Instance.new("UIListLayout", BtnHolder)
-BtnLayout.FillDirection = Enum.FillDirection.Horizontal
-BtnLayout.Padding = UDim.new(0,6)
-BtnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-BtnLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+local Layout = Instance.new("UIListLayout", BtnHolder)
+Layout.FillDirection = Enum.FillDirection.Horizontal
+Layout.Padding = UDim.new(0,6)
+Layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+Layout.VerticalAlignment = Enum.VerticalAlignment.Center
 
 local MinBtn = Instance.new("TextButton", BtnHolder)
 MinBtn.Size = UDim2.new(0,30,0,26)
@@ -97,90 +97,29 @@ CloseBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 Instance.new("UICorner", CloseBtn)
 
 ------------------------------------------------
---// SIDEBAR & CONTENT
+--// CONTENT (ANTI HITAM)
 ------------------------------------------------
-local Tabs = Instance.new("Frame", Main)
-Tabs.Position = UDim2.new(0,0,0,40)
-Tabs.Size = UDim2.new(0,130,1,-40)
-Tabs.BackgroundColor3 = Color3.fromRGB(22,22,22)
-
-local TabsLayout = Instance.new("UIListLayout", Tabs)
-TabsLayout.Padding = UDim.new(0,6)
-TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
 local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0,130,0,40)
-Content.Size = UDim2.new(1,-130,1,-40)
-Content.BackgroundColor3 = Color3.fromRGB(16,16,16)
-
-------------------------------------------------
---// PAGES & TABS
-------------------------------------------------
-local Pages = {}
-
-local function CreatePage(name)
-    local Page = Instance.new("Frame", Content)
-    Page.Size = UDim2.new(1,0,1,0)
-    Page.Visible = false
-    Page.BackgroundTransparency = 1
-    Pages[name] = Page
-end
-
-local function CreateTab(name)
-    local Btn = Instance.new("TextButton", Tabs)
-    Btn.Size = UDim2.new(0.9,0,0,32)
-    Btn.Text = name
-    Btn.Font = Enum.Font.Gotham
-    Btn.TextSize = 13
-    Btn.TextColor3 = Color3.new(1,1,1)
-    Btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Instance.new("UICorner", Btn)
-
-    Btn.MouseButton1Click:Connect(function()
-        for _,v in pairs(Pages) do
-            v.Visible = false
-        end
-        Pages[name].Visible = true
-    end)
-end
-
-CreatePage("Main")
-CreatePage("Fishing")
-CreatePage("Combat")
-CreatePage("Misc")
-
-CreateTab("Main")
-CreateTab("Fishing")
-CreateTab("Combat")
-CreateTab("Misc")
-
-Pages["Main"].Visible = true
+Content.Position = UDim2.new(0,0,0,40)
+Content.Size = UDim2.new(1,0,1,-40)
+Content.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Content.ZIndex = 10
 
 ------------------------------------------------
 --// LOGIC
 ------------------------------------------------
-UIS.InputBegan:Connect(function(i,gp)
-    if gp then return end
-    if i.KeyCode == Enum.KeyCode.RightShift then
-        Main.Visible = not Main.Visible
-    end
-end)
-
--- MINIMIZE
 MinBtn.MouseButton1Click:Connect(function()
-    Main.Visible = false
-    MiniBtn.Visible = true
+	Main.Visible = false
+	MiniBtn.Visible = true
 end)
 
--- RESTORE
 MiniBtn.MouseButton1Click:Connect(function()
-    MiniBtn.Visible = false
-    Main.Visible = true
+	MiniBtn.Visible = false
+	Main.Visible = true
 end)
 
--- CLOSE
 CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
+	ScreenGui:Destroy()
 end)
 
-print("🪩 Charles X loaded — FINAL & CLEAN")
+print("🪩 Charles X — FIXED & STABLE")
