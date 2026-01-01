@@ -6,6 +6,7 @@ local LP = Players.LocalPlayer
 --// GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CharlesHubV2"
+ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
 --// MAIN FRAME
@@ -17,6 +18,27 @@ Main.Active = true
 Main.Draggable = true
 Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
+
+--// MINI ICON (FISHING)
+local Mini = Instance.new("Frame", ScreenGui)
+Mini.Size = UDim2.new(0,70,0,70)
+Mini.Position = UDim2.new(0.5,-35,0.5,-35)
+Mini.BackgroundColor3 = Color3.fromRGB(35,35,35)
+Mini.Visible = false
+Mini.Active = true
+Mini.Draggable = true
+Mini.ZIndex = 50
+Instance.new("UICorner", Mini).CornerRadius = UDim.new(1,0)
+
+-- ICON IMAGE
+local MiniImg = Instance.new("ImageButton", Mini)
+MiniImg.Size = UDim2.new(0.85,0,0.85,0)
+MiniImg.Position = UDim2.new(0.075,0,0.075,0)
+MiniImg.BackgroundTransparency = 1
+MiniImg.Image = "rbxassetid://6031094678" -- fishing rod
+MiniImg.ZIndex = 51
+MiniImg.Active = true
+MiniImg.AutoButtonColor = true
 
 --// TOP BAR
 local Top = Instance.new("Frame", Main)
@@ -58,7 +80,6 @@ MinBtn.TextSize = 18
 MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 MinBtn.ZIndex = 7
-MinBtn.AutoButtonColor = true
 Instance.new("UICorner", MinBtn)
 
 -- CLOSE BUTTON
@@ -70,7 +91,6 @@ CloseBtn.TextSize = 14
 CloseBtn.TextColor3 = Color3.fromRGB(255,80,80)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 CloseBtn.ZIndex = 7
-CloseBtn.AutoButtonColor = true
 Instance.new("UICorner", CloseBtn)
 
 --// SIDEBAR
@@ -78,7 +98,6 @@ local Tabs = Instance.new("Frame", Main)
 Tabs.Position = UDim2.new(0,0,0,40)
 Tabs.Size = UDim2.new(0,130,1,-40)
 Tabs.BackgroundColor3 = Color3.fromRGB(22,22,22)
-Tabs.ZIndex = 1
 
 local TabsLayout = Instance.new("UIListLayout", Tabs)
 TabsLayout.Padding = UDim.new(0,6)
@@ -89,7 +108,6 @@ local Content = Instance.new("Frame", Main)
 Content.Position = UDim2.new(0,130,0,40)
 Content.Size = UDim2.new(1,-130,1,-40)
 Content.BackgroundColor3 = Color3.fromRGB(16,16,16)
-Content.ZIndex = 1
 
 --// PAGES & TABS
 local Pages = {}
@@ -100,7 +118,6 @@ local function CreatePage(name)
     Page.Visible = false
     Page.BackgroundTransparency = 1
     Pages[name] = Page
-    return Page
 end
 
 local function CreateTab(name)
@@ -111,11 +128,12 @@ local function CreateTab(name)
     Btn.TextSize = 13
     Btn.TextColor3 = Color3.new(1,1,1)
     Btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Btn.AutoButtonColor = true
     Instance.new("UICorner", Btn)
 
     Btn.MouseButton1Click:Connect(function()
-        for _,v in pairs(Pages) do v.Visible = false end
+        for _,v in pairs(Pages) do
+            v.Visible = false
+        end
         Pages[name].Visible = true
     end)
 end
@@ -134,7 +152,7 @@ CreateTab("Misc")
 
 Pages["Main"].Visible = true
 
---// HOTKEY TOGGLE
+--// HOTKEY
 UIS.InputBegan:Connect(function(i,gp)
     if gp then return end
     if i.KeyCode == Enum.KeyCode.RightShift then
@@ -142,25 +160,21 @@ UIS.InputBegan:Connect(function(i,gp)
     end
 end)
 
---// MINIMIZE & CLOSE LOGIC (PALING BAWAH)
-local minimized = false
-local normalSize = Main.Size
-
+--// MINIMIZE → ICON
 MinBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    if minimized then
-        Main.Size = UDim2.new(normalSize.X.Scale, normalSize.X.Offset, 0, 40)
-        Tabs.Visible = false
-        Content.Visible = false
-    else
-        Main.Size = normalSize
-        Tabs.Visible = true
-        Content.Visible = true
-    end
+    Main.Visible = false
+    Mini.Visible = true
 end)
 
+-- ICON → RESTORE
+MiniImg.MouseButton1Click:Connect(function()
+    Mini.Visible = false
+    Main.Visible = true
+end)
+
+--// CLOSE
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
-print("GUI loaded")
+print("Charles Hub loaded clean")
