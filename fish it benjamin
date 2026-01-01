@@ -1,121 +1,150 @@
--- Floating Auto Fishing Button dengan Lock/Unlock
+--// SERVICES
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+local LP = Players.LocalPlayer
 
-local player = Players.LocalPlayer
-
--- ScreenGui
+--// GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FloatingFishingGUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+ScreenGui.Name = "CharlesHubV2"
+ScreenGui.Parent = game.CoreGui
 
--- Floating Button Frame
-local floatFrame = Instance.new("Frame")
-floatFrame.Size = UDim2.new(0,80,0,80)
-floatFrame.Position = UDim2.new(0.5,-40,0.5,-40)
-floatFrame.BackgroundTransparency = 1
-floatFrame.Parent = ScreenGui
+--// MAIN FRAME
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 520, 0, 360)
+Main.Position = UDim2.new(0.5, -260, 0.5, -180)
+Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+Main.Active = true
+Main.Draggable = true
+Main.Parent = ScreenGui
 
--- Main Button
-local floatBtn = Instance.new("TextButton")
-floatBtn.Size = UDim2.new(1,0,1,0)
-floatBtn.BackgroundColor3 = Color3.fromRGB(70,130,180)
-floatBtn.Text = ""
-floatBtn.Parent = floatFrame
-floatBtn.AutoButtonColor = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
-local uicorner = Instance.new("UICorner")
-uicorner.CornerRadius = UDim.new(0,20)
-uicorner.Parent = floatBtn
+--// TOP BAR
+local Top = Instance.new("Frame", Main)
+Top.Size = UDim2.new(1,0,0,40)
+Top.BackgroundColor3 = Color3.fromRGB(25,25,25)
 
--- Icon Ikan
-local fishIcon = Instance.new("ImageLabel")
-fishIcon.Size = UDim2.new(0.6,0,0.6,0)
-fishIcon.Position = UDim2.new(0.2,0,0.2,0)
-fishIcon.BackgroundTransparency = 1
-fishIcon.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-fishIcon.ScaleType = Enum.ScaleType.Fit
-fishIcon.Parent = floatBtn
+local Title = Instance.new("TextLabel", Top)
+Title.Size = UDim2.new(1,0,1,0)
+Title.Text = "Charles Hub | v1.0"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 15
+Title.TextColor3 = Color3.new(1,1,1)
+Title.BackgroundTransparency = 1
 
--- Lock/Unlock Button
-local lockBtn = Instance.new("TextButton")
-lockBtn.Size = UDim2.new(0,24,0,24)
-lockBtn.Position = UDim2.new(1,-28,0,4)
-lockBtn.BackgroundColor3 = Color3.fromRGB(200,200,200)
-lockBtn.Text = "🔓"
-lockBtn.TextScaled = true
-lockBtn.TextColor3 = Color3.fromRGB(0,0,0)
-lockBtn.Parent = floatFrame
+--// SIDEBAR
+local Tabs = Instance.new("Frame", Main)
+Tabs.Position = UDim2.new(0,0,0,40)
+Tabs.Size = UDim2.new(0,130,1,-40)
+Tabs.BackgroundColor3 = Color3.fromRGB(22,22,22)
 
-local lockUICorner = Instance.new("UICorner")
-lockUICorner.CornerRadius = UDim.new(0,6)
-lockUICorner.Parent = lockBtn
+local UIList = Instance.new("UIListLayout", Tabs)
+UIList.Padding = UDim.new(0,6)
+UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Dragging logic
-local dragging = false
-local dragInput, dragStart, startPos
-local unlocked = true -- awalnya bisa digeser
+--// CONTENT
+local Content = Instance.new("Frame", Main)
+Content.Position = UDim2.new(0,130,0,40)
+Content.Size = UDim2.new(1,-130,1,-40)
+Content.BackgroundColor3 = Color3.fromRGB(16,16,16)
 
-floatFrame.InputBegan:Connect(function(input)
-    if unlocked and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = floatFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
+--// FUNCTION CREATE TAB
+local Pages = {}
 
-floatFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
+local function CreatePage(name)
+    local Page = Instance.new("Frame", Content)
+    Page.Size = UDim2.new(1,0,1,0)
+    Page.Visible = false
+    Page.BackgroundTransparency = 1
 
-RunService.RenderStepped:Connect(function()
-    if dragging and dragInput then
-        local delta = dragInput.Position - dragStart
-        floatFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
+    Pages[name] = Page
+    return Page
+end
 
--- Lock/Unlock toggle
-lockBtn.MouseButton1Click:Connect(function()
-    unlocked = not unlocked
-    lockBtn.Text = unlocked and "🔓" or "🔒"
-end)
+local function CreateTab(name)
+    local Btn = Instance.new("TextButton", Tabs)
+    Btn.Size = UDim2.new(0.9,0,0,32)
+    Btn.Text = name
+    Btn.Font = Enum.Font.Gotham
+    Btn.TextSize = 13
+    Btn.TextColor3 = Color3.new(1,1,1)
+    Btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    Btn.AutoButtonColor = false
+    Instance.new("UICorner", Btn)
 
--- Fishing toggle
-local fishing = false
-floatBtn.MouseButton1Click:Connect(function()
-    fishing = not fishing
-    floatBtn.BackgroundColor3 = fishing and Color3.fromRGB(50,200,50) or Color3.fromRGB(70,130,180)
-end)
+    Btn.MouseButton1Click:Connect(function()
+        for _,v in pairs(Pages) do v.Visible = false end
+        Pages[name].Visible = true
+    end)
+end
 
--- Auto Fishing Logic
-RunService.RenderStepped:Connect(function()
-    if fishing then
-        local success, err = pcall(function()
-            local tool = player.Backpack:FindFirstChildWhichIsA("Tool") or player.Character:FindFirstChildWhichIsA("Tool")
-            if tool and tool.Name:lower():find("fish") then
-                tool:Activate() -- cast
-                wait(1)
-                tool:Activate() -- catch
-            end
-        end)
-        if not success then
-            warn(err)
-        end
+--// CREATE PAGES
+local MainPage = CreatePage("Main")
+local FishingPage = CreatePage("Fishing")
+local CombatPage = CreatePage("Combat")
+local MiscPage = CreatePage("Misc")
+
+--// CREATE TABS
+CreateTab("Main")
+CreateTab("Fishing")
+CreateTab("Combat")
+CreateTab("Misc")
+
+Pages["Main"].Visible = true
+
+--// SECTION TEMPLATE
+local function CreateSection(parent, text)
+    local Sec = Instance.new("Frame", parent)
+    Sec.Size = UDim2.new(0.95,0,0,60)
+    Sec.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    Sec.Position = UDim2.new(0.025,0,0,10)
+
+    Instance.new("UICorner", Sec)
+
+    local Label = Instance.new("TextLabel", Sec)
+    Label.Text = text
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 14
+    Label.TextColor3 = Color3.new(1,1,1)
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0,10,0,5)
+    Label.Size = UDim2.new(1,-20,0,20)
+
+    return Sec
+end
+
+--// TOGGLE
+local function CreateToggle(parent, text)
+    local Toggle = Instance.new("TextButton", parent)
+    Toggle.Size = UDim2.new(0,120,0,28)
+    Toggle.Position = UDim2.new(0,10,0,28)
+    Toggle.Text = text.." : OFF"
+    Toggle.Font = Enum.Font.Gotham
+    Toggle.TextSize = 12
+    Toggle.TextColor3 = Color3.new(1,1,1)
+    Toggle.BackgroundColor3 = Color3.fromRGB(35,35,35)
+
+    Instance.new("UICorner", Toggle)
+
+    local state = false
+    Toggle.MouseButton1Click:Connect(function()
+        state = not state
+        Toggle.Text = text.." : "..(state and "ON" or "OFF")
+    end)
+end
+
+--// CONTENT EXAMPLE
+local FishSec = CreateSection(FishingPage, "Fishing Features")
+CreateToggle(FishSec, "Auto Fishing")
+
+local CombatSec = CreateSection(CombatPage, "Combat Features")
+CreateToggle(CombatSec, "Aimbot")
+
+--// TOGGLE GUI
+UIS.InputBegan:Connect(function(i,gp)
+    if gp then return end
+    if i.KeyCode == Enum.KeyCode.RightShift then
+        Main.Visible = not Main.Visible
     end
 end)
