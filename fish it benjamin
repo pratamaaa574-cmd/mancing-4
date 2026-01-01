@@ -1,46 +1,27 @@
---// SERVICES
-local Players = game:GetService("Players")
+-- SERVICES
 local UIS = game:GetService("UserInputService")
 
---// GUI
+-- GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CharlesHubV2"
+ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
 ------------------------------------------------
---// MAIN WINDOW
+-- MAIN WINDOW
 ------------------------------------------------
-local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0,520,0,360)
-Main.Position = UDim2.new(0.5,0,0.55,0)
-Main.AnchorPoint = Vector2.new(0.5,0.5)
+local Main = Instance.new("Frame")
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0, 520, 0, 360)
+Main.Position = UDim2.new(0, 40, 0, 80) -- FIXED POSITION (AMAN ANDROID)
 Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
-Main.Visible = true
 Main.Active = true
 Main.Draggable = true
-Main.ZIndex = 20
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
 ------------------------------------------------
---// MINI TOP BAR (FIX REAL)
-------------------------------------------------
-local MiniBar = Instance.new("TextButton", ScreenGui)
-MiniBar.Size = UDim2.new(0,170,0,38)
-MiniBar.Position = UDim2.new(0,10,0,10) -- KIRI ATAS AMAN
-MiniBar.BackgroundColor3 = Color3.fromRGB(120,200,255)
-MiniBar.Text = "🪩  Charles X"
-MiniBar.Font = Enum.Font.GothamBold
-MiniBar.TextSize = 15
-MiniBar.TextColor3 = Color3.fromRGB(20,20,20)
-MiniBar.Visible = false
-MiniBar.Active = true
-MiniBar.Draggable = true
-MiniBar.ZIndex = 1000
-Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0,10)
-
-------------------------------------------------
---// TOP BAR MAIN
+-- TOP BAR
 ------------------------------------------------
 local Top = Instance.new("Frame", Main)
 Top.Size = UDim2.new(1,0,0,40)
@@ -53,22 +34,12 @@ Title.Text = "Charles Hub"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 15
 Title.TextColor3 = Color3.new(1,1,1)
-Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
-local BtnHolder = Instance.new("Frame", Top)
-BtnHolder.Size = UDim2.new(0,80,1,0)
-BtnHolder.Position = UDim2.new(1,-85,0,0)
-BtnHolder.BackgroundTransparency = 1
-
-local Layout = Instance.new("UIListLayout", BtnHolder)
-Layout.FillDirection = Enum.FillDirection.Horizontal
-Layout.Padding = UDim.new(0,6)
-Layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-Layout.VerticalAlignment = Enum.VerticalAlignment.Center
-
-local MinBtn = Instance.new("TextButton", BtnHolder)
+local MinBtn = Instance.new("TextButton", Top)
 MinBtn.Size = UDim2.new(0,30,0,26)
+MinBtn.Position = UDim2.new(1,-70,0,7)
 MinBtn.Text = "-"
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextSize = 18
@@ -76,8 +47,9 @@ MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 Instance.new("UICorner", MinBtn)
 
-local CloseBtn = Instance.new("TextButton", BtnHolder)
+local CloseBtn = Instance.new("TextButton", Top)
 CloseBtn.Size = UDim2.new(0,30,0,26)
+CloseBtn.Position = UDim2.new(1,-35,0,7)
 CloseBtn.Text = "X"
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 14
@@ -86,15 +58,41 @@ CloseBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 Instance.new("UICorner", CloseBtn)
 
 ------------------------------------------------
---// LOGIC
+-- CONTENT (ANTI HITAM)
+------------------------------------------------
+local Content = Instance.new("Frame", Main)
+Content.Position = UDim2.new(0,0,0,40)
+Content.Size = UDim2.new(1,0,1,-40)
+Content.BackgroundColor3 = Color3.fromRGB(22,22,22)
+
+------------------------------------------------
+-- MINI FLOATING BAR (🪩 Charles X)
+------------------------------------------------
+local Mini = Instance.new("TextButton")
+Mini.Parent = ScreenGui
+Mini.Size = UDim2.new(0,160,0,36)
+Mini.Position = UDim2.new(0,10,0,10)
+Mini.BackgroundColor3 = Color3.fromRGB(120,200,255) -- biru muda
+Mini.Text = "🪩  Charles X"
+Mini.Font = Enum.Font.GothamBold
+Mini.TextSize = 15
+Mini.TextColor3 = Color3.fromRGB(20,20,20)
+Mini.Visible = false
+Mini.Active = true
+Mini.Draggable = true
+Mini.ZIndex = 100
+Instance.new("UICorner", Mini).CornerRadius = UDim.new(0,10)
+
+------------------------------------------------
+-- LOGIC
 ------------------------------------------------
 MinBtn.MouseButton1Click:Connect(function()
 	Main.Visible = false
-	MiniBar.Visible = true
+	Mini.Visible = true
 end)
 
-MiniBar.MouseButton1Click:Connect(function()
-	MiniBar.Visible = false
+Mini.MouseButton1Click:Connect(function()
+	Mini.Visible = false
 	Main.Visible = true
 end)
 
@@ -102,4 +100,4 @@ CloseBtn.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
 end)
 
-print("🪩 Charles X — MINI BAR FIXED")
+print("Charles Hub ANDROID FIX — WORKING")
