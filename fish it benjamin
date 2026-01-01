@@ -1,4 +1,4 @@
--- Floating Auto Fishing Button (Roblox)
+-- Floating Auto Fishing Button dengan Lock/Unlock
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -12,37 +12,58 @@ ScreenGui.Name = "FloatingFishingGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Floating Button
+-- Floating Button Frame
+local floatFrame = Instance.new("Frame")
+floatFrame.Size = UDim2.new(0,80,0,80)
+floatFrame.Position = UDim2.new(0.5,-40,0.5,-40)
+floatFrame.BackgroundTransparency = 1
+floatFrame.Parent = ScreenGui
+
+-- Main Button
 local floatBtn = Instance.new("TextButton")
-floatBtn.Size = UDim2.new(0,60,0,60)
-floatBtn.Position = UDim2.new(0.5, -30, 0.5, -30)
+floatBtn.Size = UDim2.new(1,0,1,0)
 floatBtn.BackgroundColor3 = Color3.fromRGB(70,130,180)
 floatBtn.Text = ""
-floatBtn.Parent = ScreenGui
+floatBtn.Parent = floatFrame
 floatBtn.AutoButtonColor = true
 
 local uicorner = Instance.new("UICorner")
-uicorner.CornerRadius = UDim.new(0,15)
+uicorner.CornerRadius = UDim.new(0,20)
 uicorner.Parent = floatBtn
 
 -- Icon Ikan
 local fishIcon = Instance.new("ImageLabel")
-fishIcon.Size = UDim2.new(0.7,0,0.7,0)
-fishIcon.Position = UDim2.new(0.15,0,0.15,0)
+fishIcon.Size = UDim2.new(0.6,0,0.6,0)
+fishIcon.Position = UDim2.new(0.2,0,0.2,0)
 fishIcon.BackgroundTransparency = 1
 fishIcon.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
 fishIcon.ScaleType = Enum.ScaleType.Fit
 fishIcon.Parent = floatBtn
 
+-- Lock/Unlock Button
+local lockBtn = Instance.new("TextButton")
+lockBtn.Size = UDim2.new(0,24,0,24)
+lockBtn.Position = UDim2.new(1,-28,0,4)
+lockBtn.BackgroundColor3 = Color3.fromRGB(200,200,200)
+lockBtn.Text = "🔓"
+lockBtn.TextScaled = true
+lockBtn.TextColor3 = Color3.fromRGB(0,0,0)
+lockBtn.Parent = floatFrame
+
+local lockUICorner = Instance.new("UICorner")
+lockUICorner.CornerRadius = UDim.new(0,6)
+lockUICorner.Parent = lockBtn
+
 -- Dragging logic
 local dragging = false
 local dragInput, dragStart, startPos
+local unlocked = true -- awalnya bisa digeser
 
-floatBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+floatFrame.InputBegan:Connect(function(input)
+    if unlocked and input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
-        startPos = floatBtn.Position
+        startPos = floatFrame.Position
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -51,7 +72,7 @@ floatBtn.InputBegan:Connect(function(input)
     end
 end)
 
-floatBtn.InputChanged:Connect(function(input)
+floatFrame.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         dragInput = input
     end
@@ -60,13 +81,19 @@ end)
 RunService.RenderStepped:Connect(function()
     if dragging and dragInput then
         local delta = dragInput.Position - dragStart
-        floatBtn.Position = UDim2.new(
+        floatFrame.Position = UDim2.new(
             startPos.X.Scale,
             startPos.X.Offset + delta.X,
             startPos.Y.Scale,
             startPos.Y.Offset + delta.Y
         )
     end
+end)
+
+-- Lock/Unlock toggle
+lockBtn.MouseButton1Click:Connect(function()
+    unlocked = not unlocked
+    lockBtn.Text = unlocked and "🔓" or "🔒"
 end)
 
 -- Fishing toggle
