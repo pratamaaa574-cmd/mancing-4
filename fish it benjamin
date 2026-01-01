@@ -1,0 +1,112 @@
+--====================================================
+-- BENJAMIN GUI | GUI CLEAN + MINIMIZE ICON
+-- HITAM TRANSPARAN + ICON IKAN
+-- ROBLOX DELTA READY
+--====================================================
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local plr = Players.LocalPlayer
+
+-- SCREENGUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "BENJAMIN_GUI"
+gui.Parent = plr.PlayerGui
+gui.ResetOnSpawn = false
+gui.Enabled = true
+
+-- MAIN FRAME
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0,250,0,100)
+main.Position = UDim2.new(0.5,-125,0.5,-50)
+main.BackgroundColor3 = Color3.fromRGB(0,0,0)
+main.BackgroundTransparency = 0.5
+main.BorderSizePixel = 2
+main.BorderColor3 = Color3.fromRGB(255,105,180)
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
+main.Visible = true
+main.Parent = gui
+
+-- TITLE
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,30)
+title.Position = UDim2.new(0,0,0,0)
+title.Text = "BENJAMIN"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.TextYAlignment = Enum.TextYAlignment.Center
+
+-- CLOSE BUTTON
+local close = Instance.new("TextButton", main)
+close.Size = UDim2.new(0,24,0,24)
+close.Position = UDim2.new(1,-28,0,2)
+close.Text = "X"
+close.TextColor3 = Color3.new(1,1,1)
+close.BackgroundColor3 = Color3.fromRGB(180,60,60)
+close.BorderSizePixel = 0
+close.Font = Enum.Font.GothamBold
+close.TextSize = 14
+
+-- MINIMIZE BUTTON
+local miniBtn = Instance.new("ImageButton", main)
+miniBtn.Size = UDim2.new(0,28,0,28)
+miniBtn.Position = UDim2.new(1,-60,0,2)
+miniBtn.Image = "rbxassetid://133123123" -- Ganti dengan asset ID ikan
+miniBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+miniBtn.BorderSizePixel = 0
+
+-- MINI ICON (IKAN)
+local mini = Instance.new("ImageButton", gui)
+mini.Size = UDim2.new(0,70,0,70)
+mini.Position = UDim2.new(0.5,-35,0.8,0)
+mini.Image = "rbxassetid://133123123" -- Ganti dengan asset ID ikan
+mini.Visible = false
+mini.BorderSizePixel = 0
+Instance.new("UICorner", mini).CornerRadius = UDim.new(1,0)
+
+-- DRAG FUNCTION
+local function dragify(frame)
+    local dragging, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+        end
+    end)
+    frame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                                        startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+dragify(main)
+dragify(mini)
+
+-- MINIMIZE LOGIC
+miniBtn.MouseButton1Click:Connect(function()
+    main.Visible = false
+    mini.Visible = true
+end)
+
+-- CLICK MINI ICON → RESTORE
+mini.MouseButton1Click:Connect(function()
+    main.Visible = true
+    mini.Visible = false
+end)
+
+-- CLOSE LOGIC
+close.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
