@@ -1,112 +1,89 @@
--- Auto Fishing GUI Script (Advanced)
--- Roblox GUI canggih: draggable, minimize, close, icon ikan, shadow, animasi
-
--- Services
+-- Floating Auto Fishing Button (Roblox)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
--- GUI Setup
+-- ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "AutoFishingGUI"
+ScreenGui.Name = "FloatingFishingGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 220, 0, 140)
-mainFrame.Position = UDim2.new(0.5, -110, 0.5, -70)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = ScreenGui
-mainFrame.Active = true
-mainFrame.Draggable = true
+-- Floating Button
+local floatBtn = Instance.new("TextButton")
+floatBtn.Size = UDim2.new(0,60,0,60)
+floatBtn.Position = UDim2.new(0.5, -30, 0.5, -30)
+floatBtn.BackgroundColor3 = Color3.fromRGB(70,130,180)
+floatBtn.Text = ""
+floatBtn.Parent = ScreenGui
+floatBtn.AutoButtonColor = true
 
--- Shadow Effect
-local shadow = Instance.new("UIShadow")
-shadow.Parent = mainFrame
-shadow.BlurRadius = 10
-shadow.Color = Color3.fromRGB(0,0,0)
-shadow.Opacity = 0.5
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0,15)
+uicorner.Parent = floatBtn
 
--- Title Bar
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 25)
-titleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-titleBar.Parent = mainFrame
+-- Icon Ikan
+local fishIcon = Instance.new("ImageLabel")
+fishIcon.Size = UDim2.new(0.7,0,0.7,0)
+fishIcon.Position = UDim2.new(0.15,0,0.15,0)
+fishIcon.BackgroundTransparency = 1
+fishIcon.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+fishIcon.ScaleType = Enum.ScaleType.Fit
+fishIcon.Parent = floatBtn
 
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Text = "Auto Fishing"
-titleLabel.Size = UDim2.new(0.7, 0, 1, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextScaled = true
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = titleBar
+-- Dragging logic
+local dragging = false
+local dragInput, dragStart, startPos
 
--- Close Button
-local closeButton = Instance.new("TextButton")
-closeButton.Text = "X"
-closeButton.Size = UDim2.new(0.15, 0, 1, 0)
-closeButton.Position = UDim2.new(0.85, 0, 0, 0)
-closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.TextScaled = true
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Parent = titleBar
-
-closeButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- Minimize Button
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Text = "-"
-minimizeButton.Size = UDim2.new(0.15, 0, 1, 0)
-minimizeButton.Position = UDim2.new(0.7, 0, 0, 0)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.TextScaled = true
-minimizeButton.Font = Enum.Font.GothamBold
-minimizeButton.Parent = titleBar
-
-local minimized = false
-minimizeButton.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    local goalSize = minimized and UDim2.new(0, 220, 0, 25) or UDim2.new(0, 220, 0, 140)
-    TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = goalSize}):Play()
-end)
-
--- Icon Ikan untuk Toggle Fishing
-local toggleButton = Instance.new("ImageButton")
-toggleButton.Size = UDim2.new(0.9, 0, 0, 60)
-toggleButton.Position = UDim2.new(0.05, 0, 0.35, 0)
-toggleButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-toggleButton.BorderSizePixel = 0
-toggleButton.Image = "rbxassetid://11628426" -- contoh asset ikan, bisa diganti
-toggleButton.ScaleType = Enum.ScaleType.Fit
-toggleButton.Parent = mainFrame
-
-local fishing = false
-toggleButton.MouseButton1Click:Connect(function()
-    fishing = not fishing
-    if fishing then
-        toggleButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50) -- hijau saat aktif
-    else
-        toggleButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180) -- biru saat nonaktif
+floatBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = floatBtn.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
     end
 end)
 
--- Auto Fishing Logic (Realistis)
+floatBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if dragging and dragInput then
+        local delta = dragInput.Position - dragStart
+        floatBtn.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Fishing toggle
+local fishing = false
+floatBtn.MouseButton1Click:Connect(function()
+    fishing = not fishing
+    floatBtn.BackgroundColor3 = fishing and Color3.fromRGB(50,200,50) or Color3.fromRGB(70,130,180)
+end)
+
+-- Auto Fishing Logic
 RunService.RenderStepped:Connect(function()
     if fishing then
         local success, err = pcall(function()
             local tool = player.Backpack:FindFirstChildWhichIsA("Tool") or player.Character:FindFirstChildWhichIsA("Tool")
             if tool and tool.Name:lower():find("fish") then
                 tool:Activate() -- cast
-                wait(1) -- tunggu sedikit
+                wait(1)
                 tool:Activate() -- catch
             end
         end)
