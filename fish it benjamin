@@ -23,38 +23,24 @@ Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
 ------------------------------------------------
---// MINI ICON (FIX FINAL)
+--// MINI FLOATING BUTTON (ROBLOX STYLE – AMAN)
 ------------------------------------------------
-local Mini = Instance.new("Frame")
-Mini.Name = "MiniIcon"
-Mini.Parent = ScreenGui
-Mini.Size = UDim2.new(0,48,0,48)
-Mini.Position = UDim2.new(0.9,0,0.5,0)
-Mini.AnchorPoint = Vector2.new(0.5,0.5)
-Mini.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Mini.Visible = false
-Mini.Active = true
-Mini.Draggable = true
-Mini.ZIndex = 50
-Instance.new("UICorner", Mini).CornerRadius = UDim.new(1,0)
-
-local MiniImg = Instance.new("ImageLabel")
-MiniImg.Parent = Mini
-MiniImg.Size = UDim2.new(0.7,0,0.7,0)
-MiniImg.Position = UDim2.new(0.5,0,0.5,0)
-MiniImg.AnchorPoint = Vector2.new(0.5,0.5)
-MiniImg.BackgroundTransparency = 1
-MiniImg.Image = "rbxassetid://3926305904"
-MiniImg.ImageRectOffset = Vector2.new(964,4)
-MiniImg.ImageRectSize = Vector2.new(36,36)
-MiniImg.ZIndex = 51
-
-local MiniClick = Instance.new("TextButton")
-MiniClick.Parent = Mini
-MiniClick.Size = UDim2.new(1,0,1,0)
-MiniClick.BackgroundTransparency = 1
-MiniClick.Text = ""
-MiniClick.ZIndex = 52
+local MiniBtn = Instance.new("TextButton")
+MiniBtn.Name = "MiniButton"
+MiniBtn.Parent = ScreenGui
+MiniBtn.Size = UDim2.new(0,52,0,52)
+MiniBtn.Position = UDim2.new(0.9,0,0.5,0)
+MiniBtn.AnchorPoint = Vector2.new(0.5,0.5)
+MiniBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+MiniBtn.Text = "☰"
+MiniBtn.Font = Enum.Font.GothamBold
+MiniBtn.TextSize = 26
+MiniBtn.TextColor3 = Color3.new(1,1,1)
+MiniBtn.Visible = false
+MiniBtn.Active = true
+MiniBtn.Draggable = true
+MiniBtn.ZIndex = 50
+Instance.new("UICorner", MiniBtn).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
 --// TOP BAR
@@ -172,18 +158,21 @@ UIS.InputBegan:Connect(function(i,gp)
     end
 end)
 
+-- MINIMIZE
 MinBtn.MouseButton1Click:Connect(function()
     Main.Visible = false
-    Mini.Visible = true
+    MiniBtn.Visible = true
 end)
 
-MiniClick.MouseButton1Click:Connect(function()
-    Mini.Visible = false
+-- RESTORE
+MiniBtn.MouseButton1Click:Connect(function()
+    MiniBtn.Visible = false
     Main.Visible = true
 end)
 
+-- CLOSE
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
-print("Charles Hub loaded CLEAN & FIXED")
+print("Charles Hub LOADED – FINAL FIX")
