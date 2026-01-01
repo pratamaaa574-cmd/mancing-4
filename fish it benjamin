@@ -19,34 +19,45 @@ Main.Draggable = true
 Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
---// MINI ICON (FISHING)
-local Mini = Instance.new("Frame", ScreenGui)
-Mini.Size = UDim2.new(0,70,0,70)
-Mini.Position = UDim2.new(0.5,-35,0.5,-35)
-Mini.BackgroundColor3 = Color3.fromRGB(35,35,35)
+------------------------------------------------
+--// MINI ICON (FINAL FIX)
+------------------------------------------------
+local Mini = Instance.new("Frame")
+Mini.Name = "MiniIcon"
+Mini.Parent = ScreenGui
+Mini.Size = UDim2.new(0,46,0,46)
+Mini.Position = UDim2.new(0.5,-23,0.5,-23)
+Mini.BackgroundColor3 = Color3.fromRGB(40,40,40)
 Mini.Visible = false
 Mini.Active = true
 Mini.Draggable = true
+Mini.Selectable = true
 Mini.ZIndex = 50
 Instance.new("UICorner", Mini).CornerRadius = UDim.new(1,0)
 
--- ICON IMAGE
-local MiniImg = Instance.new("ImageButton", Mini)
-MiniImg.Size = UDim2.new(0.85,0,0.85,0)
-MiniImg.Position = UDim2.new(0.075,0,0.075,0)
+local MiniImg = Instance.new("ImageLabel")
+MiniImg.Parent = Mini
+MiniImg.Size = UDim2.new(0.65,0,0.65,0)
+MiniImg.Position = UDim2.new(0.175,0,0.175,0)
 MiniImg.BackgroundTransparency = 1
-MiniImg.Image = "rbxassetid://6031094678" -- fishing rod
+MiniImg.Image = "rbxassetid://7072718363"
 MiniImg.ZIndex = 51
-MiniImg.Active = true
-MiniImg.AutoButtonColor = true
 
+local MiniClick = Instance.new("TextButton")
+MiniClick.Parent = Mini
+MiniClick.Size = UDim2.new(1,0,1,0)
+MiniClick.BackgroundTransparency = 1
+MiniClick.Text = ""
+MiniClick.ZIndex = 52
+
+------------------------------------------------
 --// TOP BAR
+------------------------------------------------
 local Top = Instance.new("Frame", Main)
 Top.Size = UDim2.new(1,0,0,40)
 Top.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Top.ZIndex = 5
 
--- TITLE
 local Title = Instance.new("TextLabel", Top)
 Title.Size = UDim2.new(1,-90,1,0)
 Title.Position = UDim2.new(0,10,0,0)
@@ -58,7 +69,6 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
 Title.ZIndex = 6
 
--- BUTTON HOLDER
 local BtnHolder = Instance.new("Frame", Top)
 BtnHolder.Size = UDim2.new(0,80,1,0)
 BtnHolder.Position = UDim2.new(1,-85,0,0)
@@ -71,7 +81,6 @@ BtnLayout.Padding = UDim.new(0,6)
 BtnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 BtnLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- MINIMIZE BUTTON
 local MinBtn = Instance.new("TextButton", BtnHolder)
 MinBtn.Size = UDim2.new(0,30,0,26)
 MinBtn.Text = "-"
@@ -82,7 +91,6 @@ MinBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 MinBtn.ZIndex = 7
 Instance.new("UICorner", MinBtn)
 
--- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", BtnHolder)
 CloseBtn.Size = UDim2.new(0,30,0,26)
 CloseBtn.Text = "X"
@@ -93,7 +101,9 @@ CloseBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 CloseBtn.ZIndex = 7
 Instance.new("UICorner", CloseBtn)
 
---// SIDEBAR
+------------------------------------------------
+--// SIDEBAR & CONTENT
+------------------------------------------------
 local Tabs = Instance.new("Frame", Main)
 Tabs.Position = UDim2.new(0,0,0,40)
 Tabs.Size = UDim2.new(0,130,1,-40)
@@ -103,13 +113,14 @@ local TabsLayout = Instance.new("UIListLayout", Tabs)
 TabsLayout.Padding = UDim.new(0,6)
 TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
---// CONTENT
 local Content = Instance.new("Frame", Main)
 Content.Position = UDim2.new(0,130,0,40)
 Content.Size = UDim2.new(1,-130,1,-40)
 Content.BackgroundColor3 = Color3.fromRGB(16,16,16)
 
+------------------------------------------------
 --// PAGES & TABS
+------------------------------------------------
 local Pages = {}
 
 local function CreatePage(name)
@@ -138,13 +149,11 @@ local function CreateTab(name)
     end)
 end
 
--- CREATE PAGES
 CreatePage("Main")
 CreatePage("Fishing")
 CreatePage("Combat")
 CreatePage("Misc")
 
--- CREATE TABS
 CreateTab("Main")
 CreateTab("Fishing")
 CreateTab("Combat")
@@ -152,7 +161,9 @@ CreateTab("Misc")
 
 Pages["Main"].Visible = true
 
---// HOTKEY
+------------------------------------------------
+--// INPUT & LOGIC
+------------------------------------------------
 UIS.InputBegan:Connect(function(i,gp)
     if gp then return end
     if i.KeyCode == Enum.KeyCode.RightShift then
@@ -160,19 +171,16 @@ UIS.InputBegan:Connect(function(i,gp)
     end
 end)
 
---// MINIMIZE → ICON
 MinBtn.MouseButton1Click:Connect(function()
     Main.Visible = false
     Mini.Visible = true
 end)
 
--- ICON → RESTORE
-MiniImg.MouseButton1Click:Connect(function()
+MiniClick.MouseButton1Click:Connect(function()
     Mini.Visible = false
     Main.Visible = true
 end)
 
---// CLOSE
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
