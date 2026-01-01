@@ -1,7 +1,6 @@
 --// SERVICES
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
-local LP = Players.LocalPlayer
 
 --// GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -10,50 +9,42 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
 ------------------------------------------------
---// MAIN FRAME
+--// MAIN WINDOW
 ------------------------------------------------
-local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 520, 0, 360)
-Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0,520,0,360)
+Main.Position = UDim2.new(0.5,0,0.55,0)
 Main.AnchorPoint = Vector2.new(0.5,0.5)
 Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+Main.Visible = true
 Main.Active = true
 Main.Draggable = true
-Main.Parent = ScreenGui
-Main.ZIndex = 10
+Main.ZIndex = 20
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
--- SCALE FIX (INI KUNCI NYA)
-local Scale = Instance.new("UIScale", Main)
-Scale.Scale = math.clamp(workspace.CurrentCamera.ViewportSize.X / 900, 0.75, 1)
+------------------------------------------------
+--// MINI TOP BAR (FIX REAL)
+------------------------------------------------
+local MiniBar = Instance.new("TextButton", ScreenGui)
+MiniBar.Size = UDim2.new(0,170,0,38)
+MiniBar.Position = UDim2.new(0,10,0,10) -- KIRI ATAS AMAN
+MiniBar.BackgroundColor3 = Color3.fromRGB(120,200,255)
+MiniBar.Text = "🪩  Charles X"
+MiniBar.Font = Enum.Font.GothamBold
+MiniBar.TextSize = 15
+MiniBar.TextColor3 = Color3.fromRGB(20,20,20)
+MiniBar.Visible = false
+MiniBar.Active = true
+MiniBar.Draggable = true
+MiniBar.ZIndex = 1000
+Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0,10)
 
 ------------------------------------------------
---// MINI FLOATING WINDOW (🪩 Charles X)
-------------------------------------------------
-local MiniBtn = Instance.new("TextButton")
-MiniBtn.Parent = ScreenGui
-MiniBtn.Size = UDim2.new(0,170,0,46)
-MiniBtn.Position = UDim2.new(0.5,0,0.15,0)
-MiniBtn.AnchorPoint = Vector2.new(0.5,0.5)
-MiniBtn.BackgroundColor3 = Color3.fromRGB(120, 200, 255)
-MiniBtn.Text = "🪩  Charles X"
-MiniBtn.Font = Enum.Font.GothamBold
-MiniBtn.TextSize = 18
-MiniBtn.TextColor3 = Color3.fromRGB(15,15,15)
-MiniBtn.Visible = false
-MiniBtn.Active = true
-MiniBtn.Draggable = true
-MiniBtn.ZIndex = 999
-
-Instance.new("UICorner", MiniBtn).CornerRadius = UDim.new(0,14)
-
-------------------------------------------------
---// TOP BAR
+--// TOP BAR MAIN
 ------------------------------------------------
 local Top = Instance.new("Frame", Main)
 Top.Size = UDim2.new(1,0,0,40)
 Top.BackgroundColor3 = Color3.fromRGB(25,25,25)
-Top.ZIndex = 11
 
 local Title = Instance.new("TextLabel", Top)
 Title.Size = UDim2.new(1,-90,1,0)
@@ -64,13 +55,11 @@ Title.TextSize = 15
 Title.TextColor3 = Color3.new(1,1,1)
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
-Title.ZIndex = 12
 
 local BtnHolder = Instance.new("Frame", Top)
 BtnHolder.Size = UDim2.new(0,80,1,0)
 BtnHolder.Position = UDim2.new(1,-85,0,0)
 BtnHolder.BackgroundTransparency = 1
-BtnHolder.ZIndex = 12
 
 local Layout = Instance.new("UIListLayout", BtnHolder)
 Layout.FillDirection = Enum.FillDirection.Horizontal
@@ -97,24 +86,15 @@ CloseBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 Instance.new("UICorner", CloseBtn)
 
 ------------------------------------------------
---// CONTENT (ANTI HITAM)
-------------------------------------------------
-local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0,0,0,40)
-Content.Size = UDim2.new(1,0,1,-40)
-Content.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Content.ZIndex = 10
-
-------------------------------------------------
 --// LOGIC
 ------------------------------------------------
 MinBtn.MouseButton1Click:Connect(function()
 	Main.Visible = false
-	MiniBtn.Visible = true
+	MiniBar.Visible = true
 end)
 
-MiniBtn.MouseButton1Click:Connect(function()
-	MiniBtn.Visible = false
+MiniBar.MouseButton1Click:Connect(function()
+	MiniBar.Visible = false
 	Main.Visible = true
 end)
 
@@ -122,4 +102,4 @@ CloseBtn.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
 end)
 
-print("🪩 Charles X — FIXED & STABLE")
+print("🪩 Charles X — MINI BAR FIXED")
