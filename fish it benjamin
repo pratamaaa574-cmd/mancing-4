@@ -1,45 +1,77 @@
--- SERVICES
+--// SERVICES
+local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Camera = workspace.CurrentCamera
 
--- GUI
+--// GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "CharlesHubV2"
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
+--// AUTO SIZE (HP SAFE)
+local screenSize = Camera.ViewportSize
+local WIDTH = math.clamp(screenSize.X - 40, 360, 520)
+local HEIGHT = math.clamp(screenSize.Y - 120, 260, 360)
+
 ------------------------------------------------
--- MAIN WINDOW
+--// MAIN FRAME
 ------------------------------------------------
 local Main = Instance.new("Frame")
-Main.Parent = ScreenGui
-Main.Size = UDim2.new(0, 520, 0, 360)
-Main.Position = UDim2.new(0, 40, 0, 80) -- FIXED POSITION (AMAN ANDROID)
+Main.Size = UDim2.new(0, WIDTH, 0, HEIGHT)
+Main.Position = UDim2.new(0, 20, 0, 60)
 Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 Main.Active = true
 Main.Draggable = true
+Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
+local MainSize = Main.Size
+local MainPos = Main.Position
+
 ------------------------------------------------
--- TOP BAR
+--// MINI FLOATING ICON
+------------------------------------------------
+local MiniBtn = Instance.new("TextButton")
+MiniBtn.Parent = ScreenGui
+MiniBtn.Size = UDim2.new(0,150,0,46)
+MiniBtn.Position = UDim2.new(0,20,0.5,0)
+MiniBtn.BackgroundColor3 = Color3.fromRGB(90,170,255)
+MiniBtn.Text = "🪩  Charles X"
+MiniBtn.Font = Enum.Font.GothamBold
+MiniBtn.TextSize = 15
+MiniBtn.TextColor3 = Color3.new(1,1,1)
+MiniBtn.Visible = false
+MiniBtn.Active = true
+MiniBtn.Draggable = true
+MiniBtn.ZIndex = 50
+MiniBtn.BackgroundTransparency = 1
+MiniBtn.TextTransparency = 1
+Instance.new("UICorner", MiniBtn).CornerRadius = UDim.new(0,12)
+
+------------------------------------------------
+--// TOP BAR
 ------------------------------------------------
 local Top = Instance.new("Frame", Main)
-Top.Size = UDim2.new(1,0,0,40)
-Top.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Top.Size = UDim2.new(1,0,0,38)
+Top.BackgroundColor3 = Color3.fromRGB(28,28,28)
+Instance.new("UICorner", Top).CornerRadius = UDim.new(0,12)
 
 local Title = Instance.new("TextLabel", Top)
 Title.Size = UDim2.new(1,-90,1,0)
-Title.Position = UDim2.new(0,10,0,0)
+Title.Position = UDim2.new(0,12,0,0)
 Title.Text = "Charles Hub"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 15
+Title.TextSize = 14
 Title.TextColor3 = Color3.new(1,1,1)
-Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BackgroundTransparency = 1
 
 local MinBtn = Instance.new("TextButton", Top)
-MinBtn.Size = UDim2.new(0,30,0,26)
-MinBtn.Position = UDim2.new(1,-70,0,7)
+MinBtn.Size = UDim2.new(0,28,0,24)
+MinBtn.Position = UDim2.new(1,-64,0.5,-12)
 MinBtn.Text = "-"
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextSize = 18
@@ -48,56 +80,79 @@ MinBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 Instance.new("UICorner", MinBtn)
 
 local CloseBtn = Instance.new("TextButton", Top)
-CloseBtn.Size = UDim2.new(0,30,0,26)
-CloseBtn.Position = UDim2.new(1,-35,0,7)
+CloseBtn.Size = UDim2.new(0,28,0,24)
+CloseBtn.Position = UDim2.new(1,-32,0.5,-12)
 CloseBtn.Text = "X"
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 14
-CloseBtn.TextColor3 = Color3.fromRGB(255,80,80)
+CloseBtn.TextColor3 = Color3.fromRGB(255,90,90)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
 Instance.new("UICorner", CloseBtn)
 
 ------------------------------------------------
--- CONTENT (ANTI HITAM)
+--// CONTENT (ANTI HITAM)
 ------------------------------------------------
 local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0,0,0,40)
-Content.Size = UDim2.new(1,0,1,-40)
+Content.Position = UDim2.new(0,0,0,38)
+Content.Size = UDim2.new(1,0,1,-38)
 Content.BackgroundColor3 = Color3.fromRGB(22,22,22)
 
-------------------------------------------------
--- MINI FLOATING BAR (🪩 Charles X)
-------------------------------------------------
-local Mini = Instance.new("TextButton")
-Mini.Parent = ScreenGui
-Mini.Size = UDim2.new(0,160,0,36)
-Mini.Position = UDim2.new(0,10,0,10)
-Mini.BackgroundColor3 = Color3.fromRGB(120,200,255) -- biru muda
-Mini.Text = "🪩  Charles X"
-Mini.Font = Enum.Font.GothamBold
-Mini.TextSize = 15
-Mini.TextColor3 = Color3.fromRGB(20,20,20)
-Mini.Visible = false
-Mini.Active = true
-Mini.Draggable = true
-Mini.ZIndex = 100
-Instance.new("UICorner", Mini).CornerRadius = UDim.new(0,10)
+local Info = Instance.new("TextLabel", Content)
+Info.Size = UDim2.new(1,-20,1,-20)
+Info.Position = UDim2.new(0,10,0,10)
+Info.Text = "Charles Hub Ready\n\n• Mobile Safe\n• UI Fixed\n• Mini Animated"
+Info.Font = Enum.Font.Gotham
+Info.TextSize = 14
+Info.TextWrapped = true
+Info.TextColor3 = Color3.fromRGB(180,180,180)
+Info.BackgroundTransparency = 1
 
 ------------------------------------------------
--- LOGIC
+--// ANIMATED LOGIC
 ------------------------------------------------
 MinBtn.MouseButton1Click:Connect(function()
+	TweenService:Create(
+		Main,
+		TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{
+			Size = UDim2.new(0,220,0,40),
+			BackgroundTransparency = 1
+		}
+	):Play()
+
+	task.wait(0.25)
 	Main.Visible = false
-	Mini.Visible = true
+
+	MiniBtn.Visible = true
+	TweenService:Create(
+		MiniBtn,
+		TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{
+			BackgroundTransparency = 0,
+			TextTransparency = 0
+		}
+	):Play()
 end)
 
-Mini.MouseButton1Click:Connect(function()
-	Mini.Visible = false
+MiniBtn.MouseButton1Click:Connect(function()
+	MiniBtn.Visible = false
+
 	Main.Visible = true
+	Main.Size = UDim2.new(0,220,0,40)
+	Main.BackgroundTransparency = 1
+
+	TweenService:Create(
+		Main,
+		TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{
+			Size = MainSize,
+			BackgroundTransparency = 0
+		}
+	):Play()
 end)
 
 CloseBtn.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
 end)
 
-print("Charles Hub ANDROID FIX — WORKING")
+print("Charles Hub MOBILE + ANIMATION FIXED")
