@@ -19,25 +19,25 @@ local HEIGHT = math.clamp(screenSize.Y - 180, 220, 280)
 ------------------------------------------------
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0, WIDTH, 0, HEIGHT)
-Main.Position = UDim2.new(0, -WIDTH, 0.5, -HEIGHT/2)
+Main.Position = UDim2.new(0.5, -WIDTH/2, 0.5, -HEIGHT/2)
 Main.BackgroundColor3 = Color3.fromRGB(16,30,58)
 Main.Active = true
 Main.Visible = false
-Main.ZIndex = 5
+Main.ZIndex = 10
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
-local MainOriginSize = Main.Size
-local MainOriginPos = UDim2.new(0, 12, 0.5, -HEIGHT/2)
+local ORIGINAL_SIZE = Main.Size
+local ORIGINAL_POS = Main.Position
 
 ------------------------------------------------
 --// TOP BAR
 ------------------------------------------------
 local Top = Instance.new("Frame", Main)
-Top.Size = UDim2.new(1,0,0,30)
+Top.Size = UDim2.new(1,0,0,32)
 Top.BackgroundColor3 = Color3.fromRGB(22,42,80)
 Top.Active = true
 Top.Draggable = true
-Top.ZIndex = 6
+Top.ZIndex = 11
 
 local Title = Instance.new("TextLabel", Top)
 Title.Size = UDim2.new(1,-80,1,0)
@@ -48,40 +48,44 @@ Title.TextSize = 13
 Title.TextColor3 = Color3.fromRGB(220,230,255)
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 12
 
 -- MINIMIZE
 local MinBtn = Instance.new("TextButton", Top)
-MinBtn.Size = UDim2.new(0,24,0,20)
-MinBtn.Position = UDim2.new(1,-52,0.5,-10)
-MinBtn.Text = "-"
+MinBtn.Size = UDim2.new(0,26,0,22)
+MinBtn.Position = UDim2.new(1,-58,0.5,-11)
+MinBtn.Text = "—"
 MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextSize = 16
+MinBtn.TextSize = 18
 MinBtn.BackgroundColor3 = Color3.fromRGB(60,120,200)
 MinBtn.TextColor3 = Color3.new(1,1,1)
+MinBtn.ZIndex = 13
 Instance.new("UICorner", MinBtn)
 
 -- CLOSE
 local CloseBtn = Instance.new("TextButton", Top)
-CloseBtn.Size = UDim2.new(0,24,0,20)
-CloseBtn.Position = UDim2.new(1,-26,0.5,-10)
+CloseBtn.Size = UDim2.new(0,26,0,22)
+CloseBtn.Position = UDim2.new(1,-30,0.5,-11)
 CloseBtn.Text = "X"
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 13
 CloseBtn.BackgroundColor3 = Color3.fromRGB(60,120,200)
 CloseBtn.TextColor3 = Color3.fromRGB(255,130,130)
+CloseBtn.ZIndex = 13
 Instance.new("UICorner", CloseBtn)
 
 ------------------------------------------------
 --// SIDEBAR
 ------------------------------------------------
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Position = UDim2.new(0,0,0,30)
-Sidebar.Size = UDim2.new(0,52,1,-30)
+Sidebar.Position = UDim2.new(0,0,0,32)
+Sidebar.Size = UDim2.new(0,54,1,-32)
 Sidebar.BackgroundColor3 = Color3.fromRGB(20,45,90)
+Sidebar.ZIndex = 11
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0,12)
 
 local Icon = Instance.new("TextLabel", Sidebar)
-Icon.Size = UDim2.new(1,0,0,36)
+Icon.Size = UDim2.new(1,0,0,40)
 Icon.Position = UDim2.new(0,0,0,10)
 Icon.Text = "🎣"
 Icon.Font = Enum.Font.GothamBold
@@ -93,13 +97,14 @@ Icon.BackgroundTransparency = 1
 --// CONTENT (FISHING MENU)
 ------------------------------------------------
 local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0,52,0,30)
-Content.Size = UDim2.new(1,-52,1,-30)
+Content.Position = UDim2.new(0,54,0,32)
+Content.Size = UDim2.new(1,-54,1,-32)
 Content.BackgroundColor3 = Color3.fromRGB(18,34,66)
 
 local Layout = Instance.new("UIListLayout", Content)
 Layout.Padding = UDim.new(0,8)
 Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+Layout.VerticalAlignment = Enum.VerticalAlignment.Center
 
 local function CreateButton(text)
 	local btn = Instance.new("TextButton")
@@ -110,7 +115,7 @@ local function CreateButton(text)
 	btn.TextColor3 = Color3.new(1,1,1)
 	btn.BackgroundColor3 = Color3.fromRGB(60,120,200)
 	btn.Parent = Content
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
+	Instance.new("UICorner", btn)
 	return btn
 end
 
@@ -118,24 +123,22 @@ local AutoFish = CreateButton("Auto Fishing")
 local Instant = CreateButton("Instant Catch")
 local NoDelay = CreateButton("No Fishing Delay")
 
-local state = {}
+local states = {}
 
-local function Toggle(btn, name)
-	state[name] = not state[name]
-	btn.Text = (state[name] and "✅ " or "❌ ")..name
-	btn.BackgroundColor3 = state[name]
-		and Color3.fromRGB(80,170,255)
+local function Toggle(btn,name)
+	states[name] = not states[name]
+	btn.Text = (states[name] and "✅ " or "❌ ")..name
+	btn.BackgroundColor3 = states[name]
+		and Color3.fromRGB(90,170,255)
 		or Color3.fromRGB(60,120,200)
 end
 
 AutoFish.MouseButton1Click:Connect(function()
 	Toggle(AutoFish,"Auto Fishing")
 end)
-
 Instant.MouseButton1Click:Connect(function()
 	Toggle(Instant,"Instant Catch")
 end)
-
 NoDelay.MouseButton1Click:Connect(function()
 	Toggle(NoDelay,"No Fishing Delay")
 end)
@@ -144,8 +147,8 @@ end)
 --// MINI WINDOW
 ------------------------------------------------
 local MiniBtn = Instance.new("TextButton", ScreenGui)
-MiniBtn.Size = UDim2.new(0,130,0,36)
-MiniBtn.Position = UDim2.new(0,12,0.5,0)
+MiniBtn.Size = UDim2.new(0,140,0,38)
+MiniBtn.Position = UDim2.new(0.5,-70,0.5,-19)
 MiniBtn.Text = "☄️ Charles X"
 MiniBtn.Font = Enum.Font.GothamBold
 MiniBtn.TextSize = 13
@@ -154,15 +157,17 @@ MiniBtn.TextColor3 = Color3.new(1,1,1)
 MiniBtn.Visible = false
 MiniBtn.Active = true
 MiniBtn.Draggable = true
+MiniBtn.ZIndex = 20
 Instance.new("UICorner", MiniBtn)
 
 ------------------------------------------------
---// LOADING
+--// LOADING (KANAN BAWAH + ANIMASI)
 ------------------------------------------------
 local Loading = Instance.new("Frame", ScreenGui)
-Loading.Size = UDim2.new(0,160,0,34)
-Loading.Position = UDim2.new(0,12,1,-46)
+Loading.Size = UDim2.new(0,180,0,36)
+Loading.Position = UDim2.new(1,20,1,-50)
 Loading.BackgroundColor3 = Color3.fromRGB(22,42,80)
+Loading.ZIndex = 30
 Instance.new("UICorner", Loading)
 
 local LoadText = Instance.new("TextLabel", Loading)
@@ -173,48 +178,54 @@ LoadText.TextSize = 12
 LoadText.TextColor3 = Color3.fromRGB(220,230,255)
 LoadText.BackgroundTransparency = 1
 
+TweenService:Create(Loading,TweenInfo.new(0.5,Enum.EasingStyle.Quart),{
+	Position = UDim2.new(1,-200,1,-50)
+}):Play()
+
 ------------------------------------------------
---// LOGIC
+--// START ANIMATION
 ------------------------------------------------
 task.delay(1.2,function()
-	TweenService:Create(Loading,TweenInfo.new(0.4),{BackgroundTransparency=1}):Play()
+	TweenService:Create(Loading,TweenInfo.new(0.4),{
+		BackgroundTransparency = 1
+	}):Play()
 	task.wait(0.4)
 	Loading:Destroy()
 
 	Main.Visible = true
-	TweenService:Create(Main,TweenInfo.new(0.5,Enum.EasingStyle.Quart),{
-		Position = MainOriginPos
+	Main.Size = UDim2.new(0,0,0,0)
+	TweenService:Create(Main,TweenInfo.new(0.45,Enum.EasingStyle.Back),{
+		Size = ORIGINAL_SIZE
 	}):Play()
 end)
 
--- MINIMIZE (ANIMATED)
+------------------------------------------------
+--// CONTROLS
+------------------------------------------------
 MinBtn.MouseButton1Click:Connect(function()
 	TweenService:Create(Main,TweenInfo.new(0.25),{
-		Size = UDim2.new(0,Main.Size.X.Offset,0,30)
+		Size = UDim2.new(0,ORIGINAL_SIZE.X.Offset,0,32)
 	}):Play()
 	task.wait(0.25)
 	Main.Visible = false
 	MiniBtn.Visible = true
 end)
 
--- RESTORE
 MiniBtn.MouseButton1Click:Connect(function()
 	MiniBtn.Visible = false
 	Main.Visible = true
-	Main.Size = UDim2.new(0,Main.Size.X.Offset,0,30)
+	Main.Size = UDim2.new(0,ORIGINAL_SIZE.X.Offset,0,32)
 	TweenService:Create(Main,TweenInfo.new(0.3,Enum.EasingStyle.Quart),{
-		Size = MainOriginSize
+		Size = ORIGINAL_SIZE
 	}):Play()
 end)
 
--- CLOSE (ANIMATED)
 CloseBtn.MouseButton1Click:Connect(function()
 	TweenService:Create(Main,TweenInfo.new(0.3,Enum.EasingStyle.Back,Enum.EasingDirection.In),{
-		Size = UDim2.new(0,0,0,0),
-		BackgroundTransparency = 1
+		Size = UDim2.new(0,0,0,0)
 	}):Play()
-	task.wait(0.25)
+	task.wait(0.3)
 	ScreenGui:Destroy()
 end)
 
-print("☄️ Charles X READY & STABLE")
+print("☄️ Charles X STABLE")
