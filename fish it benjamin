@@ -1,214 +1,178 @@
--- DESTROY GUI LAMA (WAJIB)
-pcall(function()
-	if game.CoreGui:FindFirstChild("CharlesHubX") then
-		game.CoreGui.CharlesHubX:Destroy()
-	end
-end)
-
---// SERVICES
 local TweenService = game:GetService("TweenService")
-local Camera = workspace.CurrentCamera
+local Player = game.Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
---// GUI
+-- 1. Dasar ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CharlesHubX"
-ScreenGui.IgnoreGuiInset = true
+ScreenGui.Name = "CharlesHub_V2"
+ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = game.CoreGui
 
---// SIZE (MOBILE SAFE)
-local screenSize = Camera.ViewportSize
-local WIDTH = math.clamp(screenSize.X - 140, 260, 340)
-local HEIGHT = math.clamp(screenSize.Y - 180, 220, 280)
+-- Warna Tema Biru Muda
+local MainBlue = Color3.fromRGB(0, 170, 255)
+local DarkBlue = Color3.fromRGB(0, 120, 200)
+local BgColor = Color3.fromRGB(15, 20, 25)
 
-------------------------------------------------
--- MAIN
-------------------------------------------------
-local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, WIDTH, 0, HEIGHT)
-Main.Position = UDim2.new(0.5, -WIDTH/2, 0.5, -HEIGHT/2)
-Main.BackgroundColor3 = Color3.fromRGB(16,30,58)
-Main.Visible = false
-Main.Active = true
-Main.ZIndex = 20
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
+-- 2. Loading Screen (Animasi Memuat)
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
+LoadingFrame.BackgroundColor3 = BgColor
+LoadingFrame.ZIndex = 10
+LoadingFrame.Parent = ScreenGui
 
-local ORIGINAL_SIZE = Main.Size
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(0, 400, 0, 50)
+LoadingText.Position = UDim2.new(0.5, -200, 0.5, -25)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "Charles Hub Memuat ☄️"
+LoadingText.TextColor3 = MainBlue
+LoadingText.Font = Enum.Font.GothamBold
+LoadingText.TextSize = 28
+LoadingText.TextTransparency = 1
+LoadingText.Parent = LoadingFrame
 
-------------------------------------------------
--- TOP BAR (PAKSA DI ATAS)
-------------------------------------------------
-local Top = Instance.new("Frame", Main)
-Top.Size = UDim2.new(1,0,0,32)
-Top.BackgroundColor3 = Color3.fromRGB(22,42,80)
-Top.Active = true
-Top.Draggable = true
-Top.ZIndex = 50
+-- Animasi Teks Memuat (Fade & Bounce)
+task.spawn(function()
+    TweenService:Create(LoadingText, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
+    for i = 1, 3 do
+        TweenService:Create(LoadingText, TweenInfo.new(0.5), {Position = UDim2.new(0.5, -200, 0.5, -35)}):Play()
+        task.wait(0.5)
+        TweenService:Create(LoadingText, TweenInfo.new(0.5), {Position = UDim2.new(0.5, -200, 0.5, -25)}):Play()
+        task.wait(0.5)
+    end
+    TweenService:Create(LoadingFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(LoadingText, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+    task.wait(0.5)
+    LoadingFrame:Destroy()
+end)
 
-local Title = Instance.new("TextLabel", Top)
-Title.Size = UDim2.new(1,-80,1,0)
-Title.Position = UDim2.new(0,10,0,0)
-Title.Text = "☄️ Charles X"
+-- 3. Main Frame (Menu Utama)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 450, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
+MainFrame.BackgroundColor3 = BgColor
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- Garis Tepi Biru Muda (Border)
+local UIGradient = Instance.new("UIStroke")
+UIGradient.Thickness = 2
+UIGradient.Color = MainBlue
+UIGradient.Parent = MainFrame
+
+-- Top Bar
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 45)
+TopBar.BackgroundColor3 = Color3.fromRGB(20, 30, 40)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Text = "☄️ Charles Hub"
+Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.TextColor3 = MainBlue
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 13
-Title.TextColor3 = Color3.fromRGB(220,230,255)
-Title.BackgroundTransparency = 1
+Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 51
+Title.BackgroundTransparency = 1
+Title.Parent = TopBar
 
-local MinBtn = Instance.new("TextButton", Top)
-MinBtn.Size = UDim2.new(0,26,0,22)
-MinBtn.Position = UDim2.new(1,-58,0.5,-11)
-MinBtn.Text = "—"
-MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextSize = 18
-MinBtn.BackgroundColor3 = Color3.fromRGB(70,140,255)
-MinBtn.TextColor3 = Color3.new(1,1,1)
-MinBtn.ZIndex = 52
-Instance.new("UICorner", MinBtn)
-
-local CloseBtn = Instance.new("TextButton", Top)
-CloseBtn.Size = UDim2.new(0,26,0,22)
-CloseBtn.Position = UDim2.new(1,-30,0.5,-11)
+-- Tombol Close (Animasi Scale)
+local CloseBtn = Instance.new("TextButton")
 CloseBtn.Text = "X"
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -40, 0, 7)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.TextColor3 = Color3.new(1,1,1)
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 13
-CloseBtn.BackgroundColor3 = Color3.fromRGB(70,140,255)
-CloseBtn.TextColor3 = Color3.fromRGB(255,140,140)
-CloseBtn.ZIndex = 52
-Instance.new("UICorner", CloseBtn)
+CloseBtn.Parent = TopBar
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
-------------------------------------------------
--- CONTENT
-------------------------------------------------
-local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0,0,0,32)
-Content.Size = UDim2.new(1,0,1,-32)
-Content.BackgroundColor3 = Color3.fromRGB(18,34,66)
-Content.ZIndex = 10
+-- Tombol Minimize
+local MinBtn = Instance.new("TextButton")
+MinBtn.Text = "-"
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -75, 0, 7)
+MinBtn.BackgroundColor3 = MainBlue
+MinBtn.TextColor3 = Color3.new(1,1,1)
+MinBtn.Font = Enum.Font.GothamBold
+MinBtn.Parent = TopBar
+Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
 
-local Layout = Instance.new("UIListLayout", Content)
-Layout.Padding = UDim.new(0,8)
-Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-Layout.VerticalAlignment = Enum.VerticalAlignment.Center
+-- 4. Minimize Icon (Charles X Biru Muda)
+local MinIcon = Instance.new("TextButton")
+MinIcon.Size = UDim2.new(0, 140, 0, 45)
+MinIcon.Position = UDim2.new(0, 20, 1, -60)
+MinIcon.BackgroundColor3 = BgColor
+MinIcon.Text = "☄️ Charles X"
+MinIcon.TextColor3 = MainBlue
+MinIcon.Font = Enum.Font.GothamBold
+MinIcon.TextSize = 16
+MinIcon.Visible = false
+MinIcon.Parent = ScreenGui
 
-local function Button(text)
-	local b = Instance.new("TextButton", Content)
-	b.Size = UDim2.new(0.9,0,0,34)
-	b.Text = "❌ "..text
-	b.Font = Enum.Font.GothamBold
-	b.TextSize = 13
-	b.TextColor3 = Color3.new(1,1,1)
-	b.BackgroundColor3 = Color3.fromRGB(70,140,255)
-	b.ZIndex = 11
-	Instance.new("UICorner", b)
-	return b
-end
+local MinIconStroke = Instance.new("UIStroke")
+MinIconStroke.Color = MainBlue
+MinIconStroke.Thickness = 2
+MinIconStroke.Parent = MinIcon
+Instance.new("UICorner", MinIcon).CornerRadius = UDim.new(0, 10)
 
-local A = Button("Auto Fishing")
-local B = Button("Instant Catch")
-local C = Button("No Fishing Delay")
+--- LOGIKA ANIMASI ---
 
-local state = {}
-local function Toggle(btn,name)
-	state[name] = not state[name]
-	btn.Text = (state[name] and "✅ " or "❌ ")..name
-end
-
-A.MouseButton1Click:Connect(function() Toggle(A,"Auto Fishing") end)
-B.MouseButton1Click:Connect(function() Toggle(B,"Instant Catch") end)
-C.MouseButton1Click:Connect(function() Toggle(C,"No Fishing Delay") end)
-
-------------------------------------------------
--- MINI BUTTON (MINIMIZE)
-------------------------------------------------
-local MiniBtn = Instance.new("TextButton", ScreenGui)
-MiniBtn.Size = UDim2.new(0,140,0,38)
-MiniBtn.Position = UDim2.new(0,12,0.5,-19)
-MiniBtn.Text = "☄️ Charles X"
-MiniBtn.Font = Enum.Font.GothamBold
-MiniBtn.TextSize = 13
-MiniBtn.BackgroundColor3 = Color3.fromRGB(70,140,255)
-MiniBtn.TextColor3 = Color3.new(1,1,1)
-MiniBtn.Visible = false
-MiniBtn.Active = true
-MiniBtn.Draggable = true
-MiniBtn.ZIndex = 100
-Instance.new("UICorner", MiniBtn)
-
-------------------------------------------------
--- LOADING (KANAN BAWAH)
-------------------------------------------------
-local Loading = Instance.new("Frame", ScreenGui)
-Loading.Size = UDim2.new(0,180,0,36)
-Loading.Position = UDim2.new(1,40,1,-50)
-Loading.BackgroundColor3 = Color3.fromRGB(22,42,80)
-Loading.ZIndex = 200
-Instance.new("UICorner", Loading)
-
-local LText = Instance.new("TextLabel", Loading)
-LText.Size = UDim2.new(1,0,1,0)
-LText.Text = "☄️ Charles X memuat..."
-LText.Font = Enum.Font.GothamBold
-LText.TextSize = 12
-LText.TextColor3 = Color3.fromRGB(220,230,255)
-LText.BackgroundTransparency = 1
-
-TweenService:Create(Loading,TweenInfo.new(0.4,Enum.EasingStyle.Quart),{
-	Position = UDim2.new(1,-200,1,-50)
-}):Play()
-
-task.delay(1.3,function()
-	TweenService:Create(Loading,TweenInfo.new(0.3,Enum.EasingStyle.Quart),{
-		Position = UDim2.new(1,40,1,-50)
-	}):Play()
-	task.wait(0.3)
-	Loading:Destroy()
-
-	Main.Visible = true
-	Main.Size = UDim2.new(0,0,0,0)
-	TweenService:Create(Main,TweenInfo.new(0.45,Enum.EasingStyle.Back),{
-		Size = ORIGINAL_SIZE
-	}):Play()
-end)
-
-------------------------------------------------
--- CONTROLS (FIXED)
-------------------------------------------------
-local minimized = false
-
-MinBtn.MouseButton1Click:Connect(function()
-	if minimized then return end
-	minimized = true
-
-	TweenService:Create(Main,TweenInfo.new(0.25),{
-		Size = UDim2.new(0,ORIGINAL_SIZE.X.Offset,0,32)
-	}):Play()
-
-	task.wait(0.25)
-	Main.Visible = false
-	MiniBtn.Visible = true
-end)
-
-MiniBtn.MouseButton1Click:Connect(function()
-	if not minimized then return end
-	minimized = false
-
-	MiniBtn.Visible = false
-	Main.Visible = true
-	Main.Size = UDim2.new(0,ORIGINAL_SIZE.X.Offset,0,32)
-
-	TweenService:Create(Main,TweenInfo.new(0.35,Enum.EasingStyle.Back),{
-		Size = ORIGINAL_SIZE
-	}):Play()
-end)
-
+-- Fungsi Close dengan Animasi Mengecil
 CloseBtn.MouseButton1Click:Connect(function()
-	TweenService:Create(Main,TweenInfo.new(0.3,Enum.EasingStyle.Quad),{
-		Size = UDim2.new(0,0,0,0)
-	}):Play()
-	task.wait(0.3)
-	ScreenGui:Destroy()
+    TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1}):Play()
+    task.wait(0.4)
+    ScreenGui:Destroy()
 end)
 
-print("☄️ Charles X FINAL FIXED")
+-- Fungsi Minimize (Meluncur ke pojok)
+MinBtn.MouseButton1Click:Connect(function()
+    local targetPos = UDim2.new(0, 20, 1, -60)
+    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Position = targetPos, Size = UDim2.new(0,0,0,0)}):Play()
+    task.wait(0.5)
+    MainFrame.Visible = false
+    MinIcon.Visible = true
+    MinIcon.Size = UDim2.new(0,0,0,45)
+    TweenService:Create(MinIcon, TweenInfo.new(0.3, Enum.EasingStyle.Back), {Size = UDim2.new(0, 140, 0, 45)}):Play()
+end)
+
+-- Fungsi Restore (Buka kembali)
+MinIcon.MouseButton1Click:Connect(function()
+    TweenService:Create(MinIcon, TweenInfo.new(0.2), {Size = UDim2.new(0,0,0,45)}):Play()
+    task.wait(0.2)
+    MinIcon.Visible = false
+    MainFrame.Visible = true
+    MainFrame:TweenPosition(UDim2.new(0.5, -225, 0.5, -150), "Out", "Back", 0.5)
+    MainFrame:TweenSize(UDim2.new(0, 450, 0, 300), "Out", "Back", 0.5)
+end)
+
+-- Drag System (Bisa digeser)
+local dragging, dragInput, dragStart, startPos
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+TopBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
