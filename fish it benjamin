@@ -5,7 +5,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 
 -- 1. Dasar ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CharlesHub_V9"
+ScreenGui.Name = "CharlesHub_V11"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
@@ -40,233 +40,140 @@ local function makeDraggable(frame, handle)
     end)
 end
 
--- 2. LOADING SCREEN (METEOR & BAR HIJAU)
+-- 2. LOADING SCREEN (METEOR & BAR)
 local LoadingScreen = Instance.new("Frame")
-LoadingScreen.Size = UDim2.new(1, 0, 1, 0)
-LoadingScreen.BackgroundTransparency = 1
-LoadingScreen.ZIndex = 200
-LoadingScreen.Parent = ScreenGui
+LoadingScreen.Size = UDim2.new(1, 0, 1, 0); LoadingScreen.BackgroundTransparency = 1; LoadingScreen.ZIndex = 200; LoadingScreen.Parent = ScreenGui
 
 local function createMeteor()
     local meteor = Instance.new("TextLabel")
-    meteor.Text = "☄️"
-    meteor.BackgroundTransparency = 1
-    meteor.TextSize = math.random(15, 30)
-    meteor.Position = UDim2.new(math.random(), 0, -0.1, 0)
-    meteor.Parent = LoadingScreen
+    meteor.Text = "☄️"; meteor.BackgroundTransparency = 1; meteor.TextSize = math.random(15, 30)
+    meteor.Position = UDim2.new(math.random(), 0, -0.1, 0); meteor.Parent = LoadingScreen
     local duration = math.random(1, 3)
     TweenService:Create(meteor, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Position = UDim2.new(meteor.Position.X.Scale - 0.2, 0, 1.1, 0), Rotation = 360}):Play()
     task.delay(duration, function() meteor:Destroy() end)
 end
-
 local spawningMeteors = true
 task.spawn(function() while spawningMeteors do createMeteor() task.wait(0.2) end end)
 
 local LoadingContainer = Instance.new("Frame")
-LoadingContainer.Size = UDim2.new(0, 300, 0, 100)
-LoadingContainer.Position = UDim2.new(0.5, -150, 0.5, -50)
-LoadingContainer.BackgroundColor3 = SidebarColor
-LoadingContainer.Parent = LoadingScreen
+LoadingContainer.Size = UDim2.new(0, 300, 0, 100); LoadingContainer.Position = UDim2.new(0.5, -150, 0.5, -50)
+LoadingContainer.BackgroundColor3 = SidebarColor; LoadingContainer.Parent = LoadingScreen
 Instance.new("UICorner", LoadingContainer)
 Instance.new("UIStroke", LoadingContainer).Color = SuccessGreen
 
 local LoadingText = Instance.new("TextLabel")
-LoadingText.Size = UDim2.new(1, 0, 0, 50)
-LoadingText.BackgroundTransparency = 1
-LoadingText.Text = "Charles Hub Memuat"
-LoadingText.TextColor3 = Color3.new(1, 1, 1)
-LoadingText.Font = Enum.Font.GothamBold
-LoadingText.TextSize = 20
-LoadingText.Parent = LoadingContainer
+LoadingText.Size = UDim2.new(1, 0, 0, 50); LoadingText.BackgroundTransparency = 1; LoadingText.Text = "Charles Hub Memuat"
+LoadingText.TextColor3 = Color3.new(1, 1, 1); LoadingText.Font = Enum.Font.GothamBold; LoadingText.TextSize = 20; LoadingText.Parent = LoadingContainer
 
 local BarBg = Instance.new("Frame")
-BarBg.Size = UDim2.new(0.8, 0, 0, 6)
-BarBg.Position = UDim2.new(0.1, 0, 0, 70)
-BarBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-BarBg.Parent = LoadingContainer
+BarBg.Size = UDim2.new(0.8, 0, 0, 6); BarBg.Position = UDim2.new(0.1, 0, 0, 70); BarBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40); BarBg.Parent = LoadingContainer
 Instance.new("UICorner", BarBg)
 
 local BarFill = Instance.new("Frame")
-BarFill.Size = UDim2.new(0, 0, 1, 0)
-BarFill.BackgroundColor3 = SuccessGreen
-BarFill.Parent = BarBg
-Instance.new("UICorner", BarFill)
+BarFill.Size = UDim2.new(0, 0, 1, 0); BarFill.BackgroundColor3 = SuccessGreen; BarFill.Parent = BarBg; Instance.new("UICorner", BarFill)
 
 -- 3. MAIN FRAME
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 450, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
-MainFrame.BackgroundColor3 = BgColor
-MainFrame.Visible = false
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
-Instance.new("UICorner", MainFrame)
-local MainStroke = Instance.new("UIStroke", MainFrame)
-MainStroke.Color = MainBlue
-MainStroke.Thickness = 1.5
+MainFrame.Size = UDim2.new(0, 450, 0, 350); MainFrame.Position = UDim2.new(0.5, -225, 0.5, -175)
+MainFrame.BackgroundColor3 = BgColor; MainFrame.Visible = false; MainFrame.ClipsDescendants = true; MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame); Instance.new("UIStroke", MainFrame).Color = MainBlue
 
--- TopBar (Diletakkan di dalam MainFrame agar ikut bergerak)
 local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, 0, 0, 40)
-TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-TopBar.ZIndex = 5 -- Pastikan di atas semuanya
-TopBar.Parent = MainFrame
+TopBar.Size = UDim2.new(1, 0, 0, 40); TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25); TopBar.ZIndex = 5; TopBar.Parent = MainFrame
 Instance.new("UICorner", TopBar)
 
 local Title = Instance.new("TextLabel")
-Title.Text = "☄️      Charles Hub"
-Title.Size = UDim2.new(1, -100, 1, 0)
-Title.Position = UDim2.new(0, 15, 0, 0)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.BackgroundTransparency = 1
-Title.ZIndex = 6
-Title.Parent = TopBar
+Title.Text = "☄️      Charles Hub"; Title.Size = UDim2.new(1, -100, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0)
+Title.TextColor3 = Color3.new(1, 1, 1); Title.Font = Enum.Font.GothamBold; Title.TextSize = 14; Title.TextXAlignment = 0; Title.BackgroundTransparency = 1; Title.Parent = TopBar
 
--- Tombol Close & Minimize
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Text = "X"
-CloseBtn.Size = UDim2.new(0, 26, 0, 26)
-CloseBtn.Position = UDim2.new(1, -35, 0, 7)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.TextColor3 = Color3.new(1,1,1)
-CloseBtn.ZIndex = 7
-CloseBtn.Parent = TopBar
-Instance.new("UICorner", CloseBtn)
+CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 26, 0, 26); CloseBtn.Position = UDim2.new(1, -35, 0, 7)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseBtn.TextColor3 = Color3.new(1,1,1); CloseBtn.Parent = TopBar; Instance.new("UICorner", CloseBtn)
 
 local MinBtn = Instance.new("TextButton")
-MinBtn.Text = "-"
-MinBtn.Size = UDim2.new(0, 26, 0, 26)
-MinBtn.Position = UDim2.new(1, -70, 0, 7)
-MinBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-MinBtn.TextColor3 = Color3.new(1,1,1)
-MinBtn.ZIndex = 7
-MinBtn.Parent = TopBar
-Instance.new("UICorner", MinBtn)
+MinBtn.Text = "-"; MinBtn.Size = UDim2.new(0, 26, 0, 26); MinBtn.Position = UDim2.new(1, -70, 0, 7)
+MinBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60); MinBtn.TextColor3 = Color3.new(1,1,1); MinBtn.Parent = TopBar; Instance.new("UICorner", MinBtn)
 
--- Sidebar
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 130, 1, -40)
-Sidebar.Position = UDim2.new(0, 0, 0, 40)
-Sidebar.BackgroundColor3 = SidebarColor
-Sidebar.BorderSizePixel = 0
-Sidebar.Parent = MainFrame
-Instance.new("UICorner", Sidebar)
+Sidebar.Size = UDim2.new(0, 130, 1, -40); Sidebar.Position = UDim2.new(0, 0, 0, 40); Sidebar.BackgroundColor3 = SidebarColor; Sidebar.Parent = MainFrame
+Instance.new("UICorner", Sidebar); local SidebarList = Instance.new("UIListLayout", Sidebar); SidebarList.Padding = UDim.new(0, 8); SidebarList.HorizontalAlignment = 1
+Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 10)
 
-local SidebarList = Instance.new("UIListLayout")
-SidebarList.Parent = Sidebar
-SidebarList.Padding = UDim.new(0, 8)
-SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
-local SidebarPadding = Instance.new("UIPadding")
-SidebarPadding.PaddingTop = UDim.new(0, 10)
-SidebarPadding.Parent = Sidebar
-
--- Page Container
 local PageContainer = Instance.new("Frame")
-PageContainer.Size = UDim2.new(1, -140, 1, -50)
-PageContainer.Position = UDim2.new(0, 135, 0, 45)
-PageContainer.BackgroundTransparency = 1
-PageContainer.Parent = MainFrame
+PageContainer.Size = UDim2.new(1, -140, 1, -50); PageContainer.Position = UDim2.new(0, 135, 0, 45); PageContainer.BackgroundTransparency = 1; PageContainer.Parent = MainFrame
 
 -- SISTEM TAB
 local function CreateTab(name, icon)
     local TabBtn = Instance.new("TextButton")
-    TabBtn.Size = UDim2.new(0.9, 0, 0, 35)
-    TabBtn.BackgroundColor3 = AccentColor
-    TabBtn.Text = icon .. " " .. name
-    TabBtn.TextColor3 = Color3.new(1,1,1)
-    TabBtn.Font = Enum.Font.GothamBold
-    TabBtn.TextSize = 12
-    TabBtn.Parent = Sidebar
-    Instance.new("UICorner", TabBtn)
+    TabBtn.Size = UDim2.new(0.9, 0, 0, 35); TabBtn.BackgroundColor3 = AccentColor; TabBtn.Text = icon .. " " .. name
+    TabBtn.TextColor3 = Color3.new(1,1,1); TabBtn.Font = Enum.Font.GothamBold; TabBtn.TextSize = 12; TabBtn.Parent = Sidebar; Instance.new("UICorner", TabBtn)
     
     local Page = Instance.new("ScrollingFrame")
-    Page.Size = UDim2.new(1, 0, 1, 0)
-    Page.BackgroundTransparency = 1
-    Page.Visible = false
-    Page.ScrollBarThickness = 2
-    Page.Parent = PageContainer
-    
-    local PageLayout = Instance.new("UIListLayout", Page)
-    PageLayout.Padding = UDim.new(0, 10)
-    PageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    Page.Size = UDim2.new(1, 0, 1, 0); Page.BackgroundTransparency = 1; Page.Visible = false; Page.ScrollBarThickness = 2; Page.Parent = PageContainer
+    local PageLayout = Instance.new("UIListLayout", Page); PageLayout.Padding = UDim.new(0, 15); PageLayout.HorizontalAlignment = 1
 
     TabBtn.MouseButton1Click:Connect(function()
         for _, v in pairs(PageContainer:GetChildren()) do v.Visible = false end
-        for _, v in pairs(Sidebar:GetChildren()) do 
-            if v:IsA("TextButton") then TweenService:Create(v, TweenInfo.new(0.3), {BackgroundColor3 = AccentColor}):Play() end 
-        end
-        Page.Visible = true
-        TweenService:Create(TabBtn, TweenInfo.new(0.3), {BackgroundColor3 = MainBlue}):Play()
+        for _, v in pairs(Sidebar:GetChildren()) do if v:IsA("TextButton") then v.BackgroundColor3 = AccentColor end end
+        Page.Visible = true; TabBtn.BackgroundColor3 = MainBlue
     end)
     return Page
 end
 
--- TAB BARU
-local FishingPage = CreateTab("Fishing", "🐟")
-local TeleportPage = CreateTab("Teleport", "🌎")
-FishingPage.Visible = true -- Default buka Fishing
-
--- FUNGSI TOGGLE (Ditaruh di Fishing)
+-- FUNGSI TOGGLE ANIMASI (GESER)
 local function AddToggle(parent, text, callback)
-    local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Size = UDim2.new(0.95, 0, 0, 40)
-    ToggleFrame.BackgroundColor3 = AccentColor
-    ToggleFrame.Parent = parent
-    Instance.new("UICorner", ToggleFrame)
-    local Label = Instance.new("TextLabel", ToggleFrame)
-    Label.Text = text; Label.Size = UDim2.new(1, -60, 1, 0); Label.Position = UDim2.new(0, 15, 0, 0)
-    Label.BackgroundTransparency = 1; Label.TextColor3 = Color3.new(1,1,1); Label.Font = Enum.Font.Gotham; Label.TextXAlignment = 0
-    local Button = Instance.new("TextButton", ToggleFrame)
-    Button.Size = UDim2.new(0, 40, 0, 20); Button.Position = UDim2.new(1, -50, 0.5, -10); Button.BackgroundColor3 = Color3.fromRGB(100, 100, 100); Button.Text = ""
-    Instance.new("UICorner", Button, {CornerRadius = UDim.new(1, 0)})
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(0.95, 0, 0, 65); Container.BackgroundColor3 = AccentColor; Container.Parent = parent; Instance.new("UICorner", Container)
+
+    local Label = Instance.new("TextLabel", Container)
+    Label.Text = text; Label.Size = UDim2.new(1, 0, 0, 30); Label.Position = UDim2.new(0, 15, 0, 5)
+    Label.BackgroundTransparency = 1; Label.TextColor3 = Color3.new(1,1,1); Label.Font = Enum.Font.GothamBold; Label.TextXAlignment = 0
+
+    local ToggleBG = Instance.new("TextButton", Container)
+    ToggleBG.Size = UDim2.new(0, 45, 0, 22); ToggleBG.Position = UDim2.new(0, 15, 0, 35)
+    ToggleBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50); ToggleBG.Text = ""; Instance.new("UICorner", ToggleBG, {CornerRadius = UDim.new(1, 0)})
+
+    local Circle = Instance.new("Frame", ToggleBG)
+    Circle.Size = UDim2.new(0, 18, 0, 18); Circle.Position = UDim2.new(0, 2, 0.5, -9)
+    Circle.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Circle, {CornerRadius = UDim.new(1, 0)})
+
     local active = false
-    Button.MouseButton1Click:Connect(function()
+    ToggleBG.MouseButton1Click:Connect(function()
         active = not active
-        TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = active and SuccessGreen or Color3.fromRGB(100, 100, 100)}):Play()
+        local targetPos = active and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
+        local targetColor = active and SuccessGreen or Color3.fromRGB(50, 50, 50)
+        
+        TweenService:Create(Circle, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+        TweenService:Create(ToggleBG, TweenInfo.new(0.3), {BackgroundColor3 = targetColor}):Play()
         callback(active)
     end)
 end
 
-AddToggle(FishingPage, "Auto Fishing", function(s) print("Fishing:", s) end)
-AddToggle(TeleportPage, "Teleport to Island", function(s) print("Teleport:", s) end)
+-- TAB PESANAN
+local FishingPage = CreateTab("Fishing", "🐟")
+local TeleportPage = CreateTab("Teleport", "🌎")
+local ShopPage = CreateTab("Shop", "🛒")
+local WebhookPage = CreateTab("WebHook", "🔗")
+FishingPage.Visible = true
+
+AddToggle(FishingPage, "Auto Fishing V2", function(s) end)
+AddToggle(FishingPage, "Legit Mode", function(s) end)
 
 -- 4. ICON MINIMIZE
 local MinIcon = Instance.new("TextButton")
 MinIcon.Size = UDim2.new(0, 110, 0, 35); MinIcon.Position = UDim2.new(0, 20, 1, -55)
-MinIcon.BackgroundColor3 = BgColor; MinIcon.Text = "☄️   Charles X"; MinIcon.TextColor3 = Color3.new(1,1,1)
-MinIcon.Font = Enum.Font.GothamBold; MinIcon.Visible = false; MinIcon.Parent = ScreenGui
+MinIcon.BackgroundColor3 = BgColor; MinIcon.Text = "☄️   Charles X"; MinIcon.TextColor3 = Color3.new(1,1,1); MinIcon.Font = Enum.Font.GothamBold; MinIcon.Visible = false; MinIcon.Parent = ScreenGui
 Instance.new("UICorner", MinIcon); Instance.new("UIStroke", MinIcon).Color = MainBlue
+makeDraggable(MainFrame, TopBar); makeDraggable(MinIcon, MinIcon)
 
-makeDraggable(MainFrame, TopBar)
-makeDraggable(MinIcon, MinIcon)
-
--- JALANKAN LOADING KE GUI
+-- JALANKAN LOADING
 task.spawn(function()
     local t = TweenService:Create(BarFill, TweenInfo.new(3, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)})
-    t:Play(); t.Completed:Wait()
-    spawningMeteors = false; LoadingScreen:Destroy()
+    t:Play(); t.Completed:Wait(); spawningMeteors = false; LoadingScreen:Destroy()
     MainFrame.Visible = true; MainFrame.Size = UDim2.new(0,0,0,0)
-    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back), {Size = UDim2.new(0, 450, 0, 300)}):Play()
+    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back), {Size = UDim2.new(0, 450, 0, 350)}):Play()
 end)
 
--- LOGIKA CLOSE & MINIMIZE (ANIMASI)
-CloseBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
-    task.wait(0.3); ScreenGui:Destroy()
-end)
-
-MinBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
-    task.wait(0.4); MainFrame.Visible = false; MinIcon.Visible = true
-    MinIcon.Size = UDim2.new(0,0,0,35)
-    TweenService:Create(MinIcon, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Size = UDim2.new(0, 110, 0, 35)}):Play()
-end)
-
-MinIcon.MouseButton1Click:Connect(function()
-    MinIcon.Visible = false; MainFrame.Visible = true
-    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back), {Size = UDim2.new(0, 450, 0, 300)}):Play()
-end)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; MinIcon.Visible = true end)
+MinIcon.MouseButton1Click:Connect(function() MinIcon.Visible = false; MainFrame.Visible = true end)
