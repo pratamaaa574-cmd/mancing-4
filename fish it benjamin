@@ -5,7 +5,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 
 -- 1. Dasar ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CharlesHub_V7"
+ScreenGui.Name = "CharlesHub_V8"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
@@ -14,6 +14,7 @@ local MainBlue = Color3.fromRGB(0, 170, 255)
 local SuccessGreen = Color3.fromRGB(0, 255, 127) 
 local BgColor = Color3.fromRGB(15, 15, 15)
 local SidebarColor = Color3.fromRGB(20, 20, 20)
+local AccentColor = Color3.fromRGB(30, 30, 30)
 
 -- FUNGSI DRAG
 local function makeDraggable(frame, handle)
@@ -39,7 +40,7 @@ local function makeDraggable(frame, handle)
     end)
 end
 
--- 2. LOADING SCREEN & EFEK METEOR (Sama seperti sebelumnya)
+-- 2. LOADING SCREEN & EFEK METEOR
 local LoadingScreen = Instance.new("Frame")
 LoadingScreen.Size = UDim2.new(1, 0, 1, 0)
 LoadingScreen.BackgroundTransparency = 1
@@ -93,7 +94,7 @@ Instance.new("UICorner", BarFill)
 
 -- 3. MAIN FRAME (DENGAN SIDEBAR)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 450, 0, 300) -- Ukuran sedikit diperlebar untuk Sidebar
+MainFrame.Size = UDim2.new(0, 450, 0, 300)
 MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 MainFrame.BackgroundColor3 = BgColor
 MainFrame.Visible = false
@@ -102,9 +103,9 @@ MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame)
 Instance.new("UIStroke", MainFrame).Color = MainBlue
 
--- Sidebar (Sisi Kiri)
+-- Sidebar
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 120, 1, 0)
+Sidebar.Size = UDim2.new(0, 130, 1, 0)
 Sidebar.BackgroundColor3 = SidebarColor
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = MainFrame
@@ -113,25 +114,30 @@ Instance.new("UICorner", Sidebar)
 local SidebarList = Instance.new("UIListLayout")
 SidebarList.Parent = Sidebar
 SidebarList.Padding = UDim.new(0, 5)
-SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
+SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Container untuk Halaman (Sisi Kanan)
+local SidebarPadding = Instance.new("UIPadding")
+SidebarPadding.PaddingTop = UDim.new(0, 45)
+SidebarPadding.Parent = Sidebar
+
+-- Page Container
 local PageContainer = Instance.new("Frame")
-PageContainer.Size = UDim2.new(1, -130, 1, -45)
-PageContainer.Position = UDim2.new(0, 125, 0, 40)
+PageContainer.Size = UDim2.new(1, -140, 1, -50)
+PageContainer.Position = UDim2.new(0, 135, 0, 45)
 PageContainer.BackgroundTransparency = 1
 PageContainer.Parent = MainFrame
 
 local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, 0, 0, 35)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
 TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TopBar.ZIndex = 2
 TopBar.Parent = MainFrame
 Instance.new("UICorner", TopBar)
 
 local Title = Instance.new("TextLabel")
 Title.Text = "☄️ Charles Hub"
 Title.Size = UDim2.new(1, -80, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
@@ -139,10 +145,11 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
 Title.Parent = TopBar
 
+-- Tombol Close & Minimize
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Text = "X"
-CloseBtn.Size = UDim2.new(0, 22, 0, 22)
-CloseBtn.Position = UDim2.new(1, -28, 0, 6)
+CloseBtn.Size = UDim2.new(0, 24, 0, 24)
+CloseBtn.Position = UDim2.new(1, -32, 0, 8)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 CloseBtn.TextColor3 = Color3.new(1,1,1)
 CloseBtn.Parent = TopBar
@@ -150,22 +157,22 @@ Instance.new("UICorner", CloseBtn)
 
 local MinBtn = Instance.new("TextButton")
 MinBtn.Text = "-"
-MinBtn.Size = UDim2.new(0, 22, 0, 22)
-MinBtn.Position = UDim2.new(1, -55, 0, 6)
+MinBtn.Size = UDim2.new(0, 24, 0, 24)
+MinBtn.Position = UDim2.new(1, -62, 0, 8)
 MinBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.Parent = TopBar
 Instance.new("UICorner", MinBtn)
 
--- FUNGSI TAB
+-- FUNGSI TAB & FITUR
 local Tabs = {}
 function CreateTab(name, icon)
     local TabBtn = Instance.new("TextButton")
-    TabBtn.Size = UDim2.new(1, -10, 0, 30)
-    TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TabBtn.Size = UDim2.new(0.9, 0, 0, 35)
+    TabBtn.BackgroundColor3 = AccentColor
     TabBtn.Text = icon .. " " .. name
     TabBtn.TextColor3 = Color3.new(1,1,1)
-    TabBtn.Font = Enum.Font.Gotham
+    TabBtn.Font = Enum.Font.GothamBold
     TabBtn.TextSize = 12
     TabBtn.Parent = Sidebar
     Instance.new("UICorner", TabBtn)
@@ -177,10 +184,14 @@ function CreateTab(name, icon)
     Page.ScrollBarThickness = 2
     Page.Parent = PageContainer
     
+    local PageLayout = Instance.new("UIListLayout", Page)
+    PageLayout.Padding = UDim.new(0, 10)
+    PageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
     TabBtn.MouseButton1Click:Connect(function()
         for _, v in pairs(PageContainer:GetChildren()) do v.Visible = false end
         for _, v in pairs(Sidebar:GetChildren()) do 
-            if v:IsA("TextButton") then TweenService:Create(v, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30,30,30)}):Play() end 
+            if v:IsA("TextButton") then TweenService:Create(v, TweenInfo.new(0.3), {BackgroundColor3 = AccentColor}):Play() end 
         end
         Page.Visible = true
         TweenService:Create(TabBtn, TweenInfo.new(0.3), {BackgroundColor3 = MainBlue}):Play()
@@ -189,11 +200,71 @@ function CreateTab(name, icon)
     return Page
 end
 
--- Menambahkan Tab Contoh
-local MainTab = CreateTab("Main", "🏠")
-local FarmTab = CreateTab("Fishing", "🎣")
-local TeleportTab = CreateTab("Teleport", "🌐")
-MainTab.Visible = true -- Tab default
+-- Menambahkan Tab Fishing
+local FishingPage = CreateTab("Fishing", "🐟")
+
+-- Fungsi Membuat Toggle (On/Off)
+function AddToggle(parent, text, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(0.9, 0, 0, 40)
+    ToggleFrame.BackgroundColor3 = AccentColor
+    ToggleFrame.Parent = parent
+    Instance.new("UICorner", ToggleFrame)
+
+    local Label = Instance.new("TextLabel")
+    Label.Text = text
+    Label.Size = UDim2.new(1, -60, 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.Gotham
+    Label.Parent = ToggleFrame
+
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0, 40, 0, 20)
+    Button.Position = UDim2.new(1, -50, 0.5, -10)
+    Button.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    Button.Text = ""
+    Button.Parent = ToggleFrame
+    Instance.new("UICorner", Button, {CornerRadius = UDim.new(1, 0)})
+
+    local active = false
+    Button.MouseButton1Click:Connect(function()
+        active = not active
+        local targetColor = active and SuccessGreen or Color3.fromRGB(100, 100, 100)
+        TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = targetColor}):Play()
+        callback(active)
+    end)
+end
+
+-- ISI TAB FISHING
+AddToggle(FishingPage, "Auto Fishing", function(state)
+    print("Auto Fishing status: ", state)
+    -- Taruh coding fishing kamu di sini nanti
+end)
+
+AddToggle(FishingPage, "Fast Catch", function(state)
+    print("Fast Catch status: ", state)
+end)
+
+-- 4. ICON MINIMIZE (BISA DIGESER)
+local MinIcon = Instance.new("TextButton")
+MinIcon.Size = UDim2.new(0, 110, 0, 35)
+MinIcon.Position = UDim2.new(0, 20, 1, -55)
+MinIcon.BackgroundColor3 = BgColor
+MinIcon.Text = "☄️   Charles X"
+MinIcon.TextColor3 = Color3.new(1,1,1)
+MinIcon.Font = Enum.Font.GothamBold
+MinIcon.TextSize = 13
+MinIcon.Visible = false
+MinIcon.Parent = ScreenGui
+Instance.new("UICorner", MinIcon)
+local MinStroke = Instance.new("UIStroke", MinIcon)
+MinStroke.Color = MainBlue
+
+makeDraggable(MainFrame, TopBar)
+makeDraggable(MinIcon, MinIcon)
 
 -- JALANKAN LOADING
 task.spawn(function()
@@ -206,7 +277,24 @@ task.spawn(function()
     TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back), {Size = UDim2.new(0, 450, 0, 300)}):Play()
 end)
 
-makeDraggable(MainFrame, TopBar)
+-- ANIMASI BUTTONS
+CloseBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
+    task.wait(0.3)
+    ScreenGui:Destroy()
+end)
 
--- Minimize Logic & Close (Sama seperti V6)
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+MinBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
+    task.wait(0.4)
+    MainFrame.Visible = false
+    MinIcon.Visible = true
+    MinIcon.Size = UDim2.new(0,0,0,35)
+    TweenService:Create(MinIcon, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Size = UDim2.new(0, 110, 0, 35)}):Play()
+end)
+
+MinIcon.MouseButton1Click:Connect(function()
+    MinIcon.Visible = false
+    MainFrame.Visible = true
+    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back), {Size = UDim2.new(0, 450, 0, 300)}):Play()
+end)
