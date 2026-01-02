@@ -5,14 +5,16 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 
 -- 1. Dasar ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CharlesHub_Final"
+ScreenGui.Name = "CharlesHub_V4"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
+-- Warna Tema
 local MainBlue = Color3.fromRGB(0, 170, 255)
+local SuccessGreen = Color3.fromRGB(0, 255, 127) -- Warna Hijau untuk Bar
 local BgColor = Color3.fromRGB(15, 15, 15)
 
--- FUNGSI DRAG (Agar bisa digeser)
+-- FUNGSI DRAG (Agar menu & icon bisa digeser)
 local function makeDraggable(frame, handle)
     local dragging, dragInput, dragStart, startPos
     handle.InputBegan:Connect(function(input)
@@ -36,44 +38,51 @@ local function makeDraggable(frame, handle)
     end)
 end
 
--- 2. ANIMASI LOADING (LANGSUNG HILANG)
+-- 2. ANIMASI LOADING (TIDAK POLOS)
 local LoadingFrame = Instance.new("Frame")
 LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
-LoadingFrame.BackgroundColor3 = BgColor
+LoadingFrame.BackgroundTransparency = 0.4 -- Tidak hitam polos (agak transparan)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 LoadingFrame.ZIndex = 100
 LoadingFrame.Parent = ScreenGui
 
 local LoadingContent = Instance.new("Frame")
-LoadingContent.Size = UDim2.new(0, 300, 0, 100)
-LoadingContent.Position = UDim2.new(0.5, -150, 0.5, -50)
-LoadingContent.BackgroundTransparency = 1
+LoadingContent.Size = UDim2.new(0, 350, 0, 120)
+LoadingContent.Position = UDim2.new(0.5, -175, 0.5, -60)
+LoadingContent.BackgroundColor3 = BgColor
 LoadingContent.Parent = LoadingFrame
+Instance.new("UICorner", LoadingContent)
+Instance.new("UIStroke", LoadingContent).Color = SuccessGreen
 
 local LoadingText = Instance.new("TextLabel")
-LoadingText.Size = UDim2.new(1, 0, 0, 40)
+LoadingText.Size = UDim2.new(1, 0, 0, 50)
+LoadingText.Position = UDim2.new(0, 0, 0, 10)
 LoadingText.BackgroundTransparency = 1
-LoadingText.Text = "☄️      Charles Hub Memuat"
+LoadingText.Text = "☄️   Charles Hub Memuat"
 LoadingText.TextColor3 = Color3.new(1, 1, 1)
 LoadingText.Font = Enum.Font.GothamBold
 LoadingText.TextSize = 20
 LoadingText.Parent = LoadingContent
 
+-- Bar di bawah teks
 local BarBg = Instance.new("Frame")
-BarBg.Size = UDim2.new(1, 0, 0, 4)
-BarBg.Position = UDim2.new(0, 0, 0, 50)
+BarBg.Size = UDim2.new(0.8, 0, 0, 8)
+BarBg.Position = UDim2.new(0.1, 0, 0, 70)
 BarBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 BarBg.BorderSizePixel = 0
 BarBg.Parent = LoadingContent
+Instance.new("UICorner", BarBg)
 
 local BarFill = Instance.new("Frame")
 BarFill.Size = UDim2.new(0, 0, 1, 0)
-BarFill.BackgroundColor3 = MainBlue
+BarFill.BackgroundColor3 = SuccessGreen -- Bar warna Hijau
 BarFill.BorderSizePixel = 0
 BarFill.Parent = BarBg
+Instance.new("UICorner", BarFill)
 
--- 3. MAIN FRAME (UKURAN DIPERKECIL)
+-- 3. MAIN FRAME (UKURAN KECIL)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 380, 0, 250) -- Ukuran diperkecil
+MainFrame.Size = UDim2.new(0, 380, 0, 250)
 MainFrame.Position = UDim2.new(0.5, -190, 0.5, -125)
 MainFrame.BackgroundColor3 = BgColor
 MainFrame.Visible = false
@@ -129,32 +138,44 @@ MinIcon.Font = Enum.Font.GothamBold
 MinIcon.TextSize = 13
 MinIcon.Visible = false
 MinIcon.Parent = ScreenGui
-Instance.new("UICorner", MinIcon).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", MinIcon)
 local MinStroke = Instance.new("UIStroke", MinIcon)
 MinStroke.Color = MainBlue
 
 makeDraggable(MainFrame, TopBar)
 makeDraggable(MinIcon, MinIcon)
 
--- PROSES LOADING KE MAIN MENU
+-- PROSES LOADING (Nunggu Bar Penuh)
 task.spawn(function()
-    TweenService:Create(BarFill, TweenInfo.new(1.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)}):Play()
-    task.wait(1.6)
-    LoadingFrame:Destroy() -- Langsung hilang total
+    local loadingTime = 2.5 -- Durasi bar mengisi
+    local tween = TweenService:Create(BarFill, TweenInfo.new(loadingTime, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)})
+    tween:Play()
+    
+    tween.Completed:Wait() -- Menunggu bar benar-benar penuh
+    task.wait(0.2)
+    
+    -- Animasi Loading Menghilang
+    TweenService:Create(LoadingFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(LoadingContent, TweenInfo.new(0.5), {Position = UDim2.new(0.5, -175, 0.5, 50), BackgroundTransparency = 1}):Play()
+    task.wait(0.5)
+    LoadingFrame:Destroy()
+    
+    -- Membuka Main Menu dengan Animasi Pop-up
     MainFrame.Visible = true
     MainFrame.Size = UDim2.new(0,0,0,0)
     TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back), {Size = UDim2.new(0, 380, 0, 250)}):Play()
 end)
 
---- ANIMASI CLOSE & MINIMIZE ---
+--- ANIMASI TUTUP (CLOSE) ---
 CloseBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1}):Play()
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
     task.wait(0.3)
     ScreenGui:Destroy()
 end)
 
+--- ANIMASI MINIMIZE ---
 MinBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
+    TweenService:Connect(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
     task.wait(0.4)
     MainFrame.Visible = false
     MinIcon.Visible = true
