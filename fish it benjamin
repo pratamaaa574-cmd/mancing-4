@@ -1,4 +1,5 @@
 --// SERVICES
+local TweenService = game:GetService("TweenService")
 local Camera = workspace.CurrentCamera
 
 --// GUI
@@ -8,157 +9,170 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
---// AUTO SIZE (MOBILE SAFE)
-local screenSize = Camera.ViewportSize
-local WIDTH = math.clamp(screenSize.X - 140, 260, 340)
-local HEIGHT = math.clamp(screenSize.Y - 180, 220, 280)
+------------------------------------------------
+--// LOADING PANEL (SAMPING)
+------------------------------------------------
+local Loading = Instance.new("Frame", ScreenGui)
+Loading.Size = UDim2.new(0,180,0,60)
+Loading.Position = UDim2.new(0,-200,0.5,-30)
+Loading.BackgroundColor3 = Color3.fromRGB(30,60,120)
+Instance.new("UICorner", Loading).CornerRadius = UDim.new(0,12)
+
+local LoadText = Instance.new("TextLabel", Loading)
+LoadText.Size = UDim2.new(1,0,1,0)
+LoadText.Text = "🪩 CharlesHub\nLoading..."
+LoadText.Font = Enum.Font.GothamBold
+LoadText.TextSize = 14
+LoadText.TextColor3 = Color3.new(1,1,1)
+LoadText.BackgroundTransparency = 1
+
+-- SLIDE IN
+TweenService:Create(
+	Loading,
+	TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+	{Position = UDim2.new(0,12,0.5,-30)}
+):Play()
+
+task.wait(1.2)
 
 ------------------------------------------------
---// MAIN FRAME (YANG DRAGGABLE)
+--// MAIN GUI
 ------------------------------------------------
+local WIDTH = math.clamp(Camera.ViewportSize.X - 160, 260, 340)
+local HEIGHT = math.clamp(Camera.ViewportSize.Y - 200, 220, 280)
+
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0, WIDTH, 0, HEIGHT)
-Main.Position = UDim2.new(0, 12, 0.5, -HEIGHT/2)
-Main.BackgroundColor3 = Color3.fromRGB(16, 30, 58)
+Main.Position = UDim2.new(0,-WIDTH,0.5,-HEIGHT/2)
+Main.BackgroundColor3 = Color3.fromRGB(16,30,58)
 Main.Active = true
-Main.Draggable = true
-Main.ZIndex = 1
+Main.ZIndex = 5
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,12)
 
+-- SLIDE MAIN IN
+TweenService:Create(
+	Main,
+	TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+	{Position = UDim2.new(0,12,0.5,-HEIGHT/2)}
+):Play()
+
+-- LOADING OUT
+TweenService:Create(
+	Loading,
+	TweenInfo.new(0.3),
+	{Position = UDim2.new(0,-220,0.5,-30)}
+):Play()
+
+task.delay(0.3,function()
+	Loading:Destroy()
+end)
+
 ------------------------------------------------
---// TOP BAR (TIDAK DRAGGABLE)
+--// TOP BAR
 ------------------------------------------------
 local Top = Instance.new("Frame", Main)
 Top.Size = UDim2.new(1,0,0,30)
 Top.BackgroundColor3 = Color3.fromRGB(22,42,80)
-Top.ZIndex = 5
+Top.Active = true
+Top.Draggable = true
+Instance.new("UICorner", Top).CornerRadius = UDim.new(0,12)
 
 local Title = Instance.new("TextLabel", Top)
 Title.Size = UDim2.new(1,-70,1,0)
 Title.Position = UDim2.new(0,10,0,0)
-Title.Text = "Charles Hub"
+Title.Text = "🐟 Fishing Menu"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 13
 Title.TextColor3 = Color3.fromRGB(220,230,255)
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 6
 
-------------------------------------------------
---// TOP BUTTON HOLDER (FIX UTAMA)
-------------------------------------------------
-local BtnHolder = Instance.new("Frame", Top)
-BtnHolder.Size = UDim2.new(0,52,1,0)
-BtnHolder.Position = UDim2.new(1,-56,0,0)
-BtnHolder.BackgroundTransparency = 1
-BtnHolder.ZIndex = 6
-
-local Layout = Instance.new("UIListLayout", BtnHolder)
-Layout.FillDirection = Enum.FillDirection.Horizontal
-Layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-Layout.VerticalAlignment = Enum.VerticalAlignment.Center
-Layout.Padding = UDim.new(0,6)
-
--- MINIMIZE
-local MinBtn = Instance.new("TextButton", BtnHolder)
-MinBtn.Size = UDim2.new(0,22,0,18)
+local MinBtn = Instance.new("TextButton", Top)
+MinBtn.Size = UDim2.new(0,24,0,20)
+MinBtn.Position = UDim2.new(1,-52,0.5,-10)
 MinBtn.Text = "-"
 MinBtn.Font = Enum.Font.GothamBold
 MinBtn.TextSize = 16
-MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.BackgroundColor3 = Color3.fromRGB(60,120,200)
-MinBtn.ZIndex = 7
-Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0,6)
+MinBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", MinBtn)
 
--- CLOSE
-local CloseBtn = Instance.new("TextButton", BtnHolder)
-CloseBtn.Size = UDim2.new(0,22,0,18)
+local CloseBtn = Instance.new("TextButton", Top)
+CloseBtn.Size = UDim2.new(0,24,0,20)
+CloseBtn.Position = UDim2.new(1,-26,0.5,-10)
 CloseBtn.Text = "X"
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 12
-CloseBtn.TextColor3 = Color3.fromRGB(255,130,130)
+CloseBtn.TextSize = 13
 CloseBtn.BackgroundColor3 = Color3.fromRGB(60,120,200)
-CloseBtn.ZIndex = 7
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,6)
+CloseBtn.TextColor3 = Color3.fromRGB(255,120,120)
+Instance.new("UICorner", CloseBtn)
 
 ------------------------------------------------
---// SIDEBAR
-------------------------------------------------
-local Sidebar = Instance.new("Frame", Main)
-Sidebar.Position = UDim2.new(0,0,0,30)
-Sidebar.Size = UDim2.new(0,52,1,-30)
-Sidebar.BackgroundColor3 = Color3.fromRGB(20,45,90)
-Sidebar.ZIndex = 2
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0,12)
-
-local Icon = Instance.new("TextLabel", Sidebar)
-Icon.Size = UDim2.new(1,0,0,36)
-Icon.Position = UDim2.new(0,0,0,10)
-Icon.Text = "🪩"
-Icon.Font = Enum.Font.GothamBold
-Icon.TextSize = 22
-Icon.TextColor3 = Color3.fromRGB(210,230,255)
-Icon.BackgroundTransparency = 1
-
-local SideText = Instance.new("TextLabel", Sidebar)
-SideText.Size = UDim2.new(1,0,0,22)
-SideText.Position = UDim2.new(0,0,0,46)
-SideText.Text = "X"
-SideText.Font = Enum.Font.GothamBold
-SideText.TextSize = 13
-SideText.TextColor3 = Color3.fromRGB(180,210,255)
-SideText.BackgroundTransparency = 1
-
-------------------------------------------------
---// CONTENT
+--// CONTENT (DASHBOARD STYLE)
 ------------------------------------------------
 local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0,52,0,30)
-Content.Size = UDim2.new(1,-52,1,-30)
+Content.Position = UDim2.new(0,0,0,30)
+Content.Size = UDim2.new(1,0,1,-30)
 Content.BackgroundColor3 = Color3.fromRGB(18,34,66)
 
 local Info = Instance.new("TextLabel", Content)
-Info.Size = UDim2.new(1,-16,1,-16)
-Info.Position = UDim2.new(0,8,0,8)
-Info.Text = "UI Compact\nMobile Friendly\nAll Stable"
+Info.Size = UDim2.new(1,-20,1,-20)
+Info.Position = UDim2.new(0,10,0,10)
+Info.Text = "🎣 Auto Fishing\n⚡ Instant Catch\n⏱ Delay Control\n\nStatus: Ready"
 Info.Font = Enum.Font.Gotham
 Info.TextSize = 13
 Info.TextWrapped = true
-Info.TextColor3 = Color3.fromRGB(200,220,255)
+Info.TextColor3 = Color3.fromRGB(210,230,255)
 Info.BackgroundTransparency = 1
 
 ------------------------------------------------
---// MINI WINDOW
+--// MINI BUTTON
 ------------------------------------------------
-local MiniBtn = Instance.new("TextButton", ScreenGui)
-MiniBtn.Size = UDim2.new(0,120,0,34)
-MiniBtn.Position = UDim2.new(0,12,0.5,0)
-MiniBtn.Text = "☄️ Charles X"
-MiniBtn.Font = Enum.Font.GothamBold
-MiniBtn.TextSize = 13
-MiniBtn.BackgroundColor3 = Color3.fromRGB(60,120,200)
-MiniBtn.TextColor3 = Color3.new(1,1,1)
-MiniBtn.Visible = false
-MiniBtn.Active = true
-MiniBtn.Draggable = true
-MiniBtn.ZIndex = 10
-Instance.new("UICorner", MiniBtn).CornerRadius = UDim.new(0,10)
+local Mini = Instance.new("TextButton", ScreenGui)
+Mini.Size = UDim2.new(0,120,0,36)
+Mini.Position = UDim2.new(0,12,0.5,0)
+Mini.Text = "🪩 Charles X"
+Mini.Font = Enum.Font.GothamBold
+Mini.TextSize = 13
+Mini.BackgroundColor3 = Color3.fromRGB(60,120,200)
+Mini.TextColor3 = Color3.new(1,1,1)
+Mini.Visible = false
+Mini.Active = true
+Mini.Draggable = true
+Instance.new("UICorner", Mini).CornerRadius = UDim.new(0,10)
 
 ------------------------------------------------
---// LOGIC
+--// LOGIC + ANIMATION
 ------------------------------------------------
 MinBtn.MouseButton1Click:Connect(function()
+	TweenService:Create(
+		Main,
+		TweenInfo.new(0.35, Enum.EasingStyle.Quad),
+		{Position = UDim2.new(0,-WIDTH,0.5,-HEIGHT/2)}
+	):Play()
+	task.wait(0.3)
 	Main.Visible = false
-	MiniBtn.Visible = true
+	Mini.Visible = true
 end)
 
-MiniBtn.MouseButton1Click:Connect(function()
-	MiniBtn.Visible = false
+Mini.MouseButton1Click:Connect(function()
+	Mini.Visible = false
 	Main.Visible = true
+	TweenService:Create(
+		Main,
+		TweenInfo.new(0.35, Enum.EasingStyle.Quad),
+		{Position = UDim2.new(0,12,0.5,-HEIGHT/2)}
+	):Play()
 end)
 
 CloseBtn.MouseButton1Click:Connect(function()
+	TweenService:Create(
+		Main,
+		TweenInfo.new(0.3),
+		{BackgroundTransparency = 1, Position = Main.Position + UDim2.new(0,0,0,20)}
+	):Play()
+	task.wait(0.3)
 	ScreenGui:Destroy()
 end)
 
-print("Charles Hub FINAL FIX — NO BUG")
+print("Charles Hub LOADED WITH ANIMATION")
