@@ -1,275 +1,2388 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local VirtualUser = game:GetService("VirtualUser")
 local Player = game.Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- SERVICES & NETWORKING (DARI ZYYN X)
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index")["sleitnick_net@0.2.0"].net
+local NetworkFunctions = {
+    UpdateRadar = Net:WaitForChild("RF/UpdateFishingRadar"),
+    SellAll = Net:WaitForChild("RF/SellAllItems"),
+    ChargeRod = Net:WaitForChild("RF/ChargeFishingRod"),
+    StartMinigame = Net:WaitForChild("RF/RequestFishingMinigameStarted")
+}
 
 -- 1. Dasar ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CharlesHub_V13"
+ScreenGui.Name = "CharlesHub_V18"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
 -- Warna Tema
 local MainBlue = Color3.fromRGB(0, 170, 255)
-local SuccessGreen = Color3.fromRGB(0, 255, 127)
+local SuccessGreen = Color3.fromRGB(0, 255, 127) 
 local BgColor = Color3.fromRGB(15, 15, 15)
 local SidebarColor = Color3.fromRGB(20, 20, 20)
 local AccentColor = Color3.fromRGB(30, 30, 30)
 
--- DRAG
+-- FUNGSI DRAG
 local function makeDraggable(frame, handle)
-	local dragging, dragInput, dragStart, startPos
-	handle.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
-			end)
-		end
-	end)
-	handle.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
-	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end)
+    local dragging, dragInput, dragStart, startPos
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = frame.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+        end
+    end)
+    handle.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
 end
 
--- LOADING
-local LoadingScreen = Instance.new("Frame", ScreenGui)
-LoadingScreen.Size = UDim2.new(1,0,1,0)
-LoadingScreen.BackgroundTransparency = 1
-LoadingScreen.ZIndex = 200
+-- 2. MAIN FRAME
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 420, 0, 280); MainFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
+MainFrame.BackgroundColor3 = BgColor; MainFrame.Parent = ScreenGui; Instance.new("UICorner", MainFrame)
+Instance.new("UIStroke", MainFrame).Color = MainBlue
 
-local function meteor()
-	local t = Instance.new("TextLabel", LoadingScreen)
-	t.Text = "☄️"
-	t.TextSize = math.random(16,28)
-	t.BackgroundTransparency = 1
-	t.Position = UDim2.new(math.random(),0,-0.1,0)
-	TweenService:Create(t,TweenInfo.new(2),{Position=UDim2.new(t.Position.X.Scale-0.2,0,1.1,0),Rotation=360}):Play()
-	task.delay(2,function() t:Destroy() end)
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 35); TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25); TopBar.Parent = MainFrame
+Instance.new("UICorner", TopBar)
+
+local Title = Instance.new("TextLabel")
+Title.Text = "☄️  Charles Hub V18 - FishIt Edition"; Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 12, 0, 0)
+Title.TextColor3 = Color3.new(1, 1, 1); Title.Font = Enum.Font.GothamBold; Title.TextSize = 12; Title.TextXAlignment = 0; Title.BackgroundTransparency = 1; Title.Parent = TopBar
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 22, 0, 22); CloseBtn.Position = UDim2.new(1, -28, 0, 6); CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); CloseBtn.TextColor3 = Color3.new(1,1,1); CloseBtn.Parent = TopBar; Instance.new("UICorner", CloseBtn)
+
+-- Sidebar
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 100, 1, -35); Sidebar.Position = UDim2.new(0, 0, 0, 35); Sidebar.BackgroundColor3 = SidebarColor; Sidebar.Parent = MainFrame
+Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 5)
+Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 8)
+
+local PageContainer = Instance.new("Frame")
+PageContainer.Size = UDim2.new(1, -110, 1, -45); PageContainer.Position = UDim2.new(0, 105, 0, 40); PageContainer.BackgroundTransparency = 1; PageContainer.Parent = MainFrame
+
+-- TAB SYSTEM
+local function CreateTab(name, icon)
+    local TabBtn = Instance.new("TextButton")
+    TabBtn.Size = UDim2.new(0.9, 0, 0, 30); TabBtn.BackgroundColor3 = AccentColor; TabBtn.Text = icon.." "..name
+    TabBtn.TextColor3 = Color3.new(1,1,1); TabBtn.Font = Enum.Font.GothamBold; TabBtn.TextSize = 10; TabBtn.Parent = Sidebar; Instance.new("UICorner", TabBtn)
+    local Page = Instance.new("ScrollingFrame")
+    Page.Size = UDim2.new(1, 0, 1, 0); Page.BackgroundTransparency = 1; Page.Visible = false; Page.ScrollBarThickness = 2; Page.Parent = PageContainer
+    Instance.new("UIListLayout", Page).Padding = UDim.new(0, 8)
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, v in pairs(PageContainer:GetChildren()) do v.Visible = false end
+        for _, v in pairs(Sidebar:GetChildren()) do if v:IsA("TextButton") then v.BackgroundColor3 = AccentColor end end
+        Page.Visible = true; TabBtn.BackgroundColor3 = MainBlue
+    end)
+    return Page
 end
 
-local runMeteor = true
+-- UI TOOLS (TOGGLE STYLE USER)
+local function AddToggle(parent, text, callback)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(0.95, 0, 0, 40); Container.BackgroundColor3 = AccentColor; Container.Parent = parent; Instance.new("UICorner", Container)
+    local Label = Instance.new("TextLabel", Container)
+    Label.Text = text; Label.Size = UDim2.new(1, -60, 1, 0); Label.Position = UDim2.new(0, 10, 0, 0); Label.BackgroundTransparency = 1; Label.TextColor3 = Color3.new(1,1,1); Label.Font = Enum.Font.GothamBold; Label.TextSize = 10; Label.TextXAlignment = 0
+    local ToggleBtn = Instance.new("TextButton", Container)
+    ToggleBtn.Size = UDim2.new(0, 35, 0, 18); ToggleBtn.Position = UDim2.new(1, -45, 0.5, -9); ToggleBtn.BackgroundColor3 = Color3.fromRGB(60,60,60); ToggleBtn.Text = ""; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1,0)
+    local Circle = Instance.new("Frame", ToggleBtn)
+    Circle.Size = UDim2.new(0, 14, 0, 14); Circle.Position = UDim2.new(0, 2, 0.5, -7); Circle.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Circle).CornerRadius = UDim.new(1,0)
+    local en = false
+    ToggleBtn.MouseButton1Click:Connect(function()
+        en = not en
+        TweenService:Create(Circle, TweenInfo.new(0.2), {Position = en and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
+        TweenService:Create(ToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = en and SuccessGreen or Color3.fromRGB(60,60,60)}):Play()
+        callback(en)
+    end)
+end
+
+local function AddButton(parent, text, callback)
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(0.95, 0, 0, 35); Btn.BackgroundColor3 = AccentColor; Btn.Text = text; Btn.TextColor3 = Color3.new(1,1,1); Btn.Font = Enum.Font.GothamBold; Btn.TextSize = 10; Btn.Parent = parent; Instance.new("UICorner", Btn)
+    Btn.MouseButton1Click:Connect(callback)
+end
+
+-- TABS
+local Home = Window:AddTab({
+    Name = "Home",
+    Icon = "info"
+})
+
+local Fishing = Window:AddTab({
+    Name = "Fishing",
+    Icon = "rbxassetid://100067447000453"
+})
+
+local Shop = Window:AddTab({
+    Name = "Shop",
+    Icon = "piggy-bank"
+})
+
+local Favo = Window:AddTab({
+    Name = "Auto Favorite",
+    Icon = "heart"
+})
+
+local Teleport = Window:AddTab({
+    Name = "Teleport",
+    Icon = "map-pin"
+})
+
+local Trade = Window:AddTab({
+    Name = "Trade",
+    Icon = "repeat"
+})
+local Misc = Window:AddTab({
+    Name = "Misc",
+    Icon = "snowflake"
+})
+
+local dcsec = Home:AddSection("Support", true)
+
+local srv = Home:AddSection("Server")
+
+local antiIDLE = srv:AddToggle({
+    Title = "Anti Afk",
+    Content = "Anti kick when idle for 20 mins.",
+    Default = false,
+    Callback = function(enabled)
+        _G.AntiAFK = enabled
+        local VirtualUser = game:GetService("VirtualUser")
+        task.spawn(function()
+            while _G.AntiAFK do
+                task.wait(60)
+                pcall(function()
+                    VirtualUser:CaptureController()
+
+                    VirtualUser:ClickButton2(Vector2.new())
+                end)
+            end
+        end)
+    end
+})
+
+
+local autoRECON = srv:AddToggle({
+    Title = "Auto Reconnect",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        _G.AutoReconnect = enabled
+        if enabled then
+            task.spawn(function()
+                while _G.AutoReconnect do
+                    task.wait(2)
+                    local promptGui = game:GetService("CoreGui"):FindFirstChild("RobloxPromptGui")
+                    local promptOverlay = promptGui and promptGui:FindFirstChild("promptOverlay")
+                    if promptOverlay then
+                        local reconnectButton = promptOverlay:FindFirstChild("ButtonPrimary")
+                        if reconnectButton and reconnectButton.Visible then
+                            firesignal(reconnectButton.MouseButton1Click)
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
+
+function RejoinServer()
+    local TeleportService = game:GetService("TeleportService")
+    local Player = game:GetService("Players").LocalPlayer
+    TeleportService:Teleport(game.PlaceId, Player)
+end
+
+srv:AddButton({
+    Title = "Rejoin Server",
+    Content = "Teleport back to the same game",
+    Callback = function()
+        task.wait(0.5)
+        local TeleportService = game:GetService("TeleportService")
+        local Player = game:GetService("Players").LocalPlayer
+        TeleportService:Teleport(game.PlaceId, Player)
+    end
+})
+
+local fsh = Fishing:AddSection("Legit (Auto Perfect)")
+
+local MouseReleaseCallback = nil
+local LegitShakeDelay = 0.05
+local DefaultLegitDelay = 0.1
+
+_G.FishMiniData = _G.FishMiniData or {}
+
+local InputControl = require(ReplicatedStorage.Modules.InputControl)
+local OldRegisterMouseReleased = InputControl.RegisterMouseReleased
+
+function InputControl.RegisterMouseReleased(self, param2, callback)
+    MouseReleaseCallback = callback
+    return OldRegisterMouseReleased(self, param2, callback)
+end
+
+function castWithBarRelease()
+    local PlayerGui = LocalPlayer.PlayerGui
+    local Camera = workspace.CurrentCamera
+    local CenterPosition = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    pcall(function()
+        CancelFishingInputs:InvokeServer()
+    end)
+
+    pcall(function()
+        FishingController:RequestChargeFishingRod(CenterPosition, false)
+    end)
+
+    local ChargeBar = PlayerGui:WaitForChild("Charge"):WaitForChild("Main"):WaitForChild("CanvasGroup"):WaitForChild("Bar")
+
+    repeat
+        task.wait()
+    until ChargeBar.Size.Y.Scale > 0
+
+    local StartTime = tick()
+
+    while ChargeBar:IsDescendantOf(PlayerGui) and ChargeBar.Size.Y.Scale < 0.93 do
+        task.wait()
+        if tick() - StartTime > 2 then
+            break
+        end
+    end
+
+    if MouseReleaseCallback then
+        pcall(MouseReleaseCallback)
+    end
+end
+
+function StartLegitFishing(enabled)
+    FishingController._autoLoop = enabled
+    FishingController._autoShake = enabled
+
+    if enabled then
+        task.spawn(function()
+            pcall(function()
+                EquipToolFromHotbar:FireServer(1)
+            end)
+            task.wait(0.5)
+        end)
+
+        task.spawn(function()
+            local UserId = tostring(LocalPlayer.UserId)
+            local CosmeticFolder = workspace:WaitForChild("CosmeticFolder")
+
+            while FishingController._autoLoop do
+                if not CosmeticFolder:FindFirstChild(UserId) then
+                    castWithBarRelease()
+                    task.wait(0.2)
+                end
+
+                while CosmeticFolder:FindFirstChild(UserId) and FishingController._autoLoop do
+                    task.wait(0.2)
+                end
+
+                task.wait(0.2)
+            end
+        end)
+
+        local ClickEffect = LocalPlayer.PlayerGui:FindFirstChild("!!! Click Effect")
+        if ClickEffect then
+            ClickEffect.Enabled = false
+        end
+
+        task.spawn(function()
+            while FishingController._autoShake do
+                pcall(function()
+                    FishingController:RequestFishingMinigameClick()
+                end)
+                task.wait(LegitShakeDelay)
+            end
+        end)
+    else
+        local ClickEffect = LocalPlayer.PlayerGui:FindFirstChild("!!! Click Effect")
+        if ClickEffect then
+            ClickEffect.Enabled = true
+        end
+    end
+end
+
+fsh:AddToggle({
+    Title = "Legit Fishing",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        if enabled then
+            task.spawn(function()
+                pcall(function()
+                    EquipToolFromHotbar:FireServer(1)
+                end)
+                task.wait(0.3)
+                StartLegitFishing(enabled)
+            end)
+        else
+            StartLegitFishing(enabled)
+        end
+
+        local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+        local fishingGui = playerGui:WaitForChild("Fishing"):WaitForChild("Main")
+
+        if enabled then
+            fishingGui.Visible = false
+        else
+            fishingGui.Visible = true
+        end
+    end
+})
+fsh:AddButton({
+    Title = "Manual Fix Stuck",
+    Content = "",
+    Callback = function()
+        StartLegitFishing(false)
+
+        AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "| Manual Fix Stuck",
+            Content = "Stuck Fixed",
+            Delay = 2
+        })
+    end
+})
+
+local fin = Fishing:AddSection("Instant")
+
+local InstantFishEnabled = false
+local InstantDelayComplete = 0.1
+_G.FishMiniData = _G.FishMiniData or {}
+
+local MiniEvent = net:WaitForChild("RE/FishingMinigameChanged")
+if MiniEvent then
+    if _G._MiniEventConn then
+        _G._MiniEventConn:Disconnect()
+    end
+
+    _G._MiniEventConn = MiniEvent.OnClientEvent:Connect(function(param1, param2)
+        if param1 and param2 then
+            _G.FishMiniData = param2
+        end
+    end)
+end
+
+local function StartInstantFishing(enabled)
+    InstantFishEnabled = enabled
+
+    if enabled then
+        task.spawn(function()
+            pcall(function()
+                EquipToolFromHotbar:FireServer(1)
+            end)
+            task.wait(0.5)
+        end)
+
+        task.spawn(function()
+            task.wait(0.5)
+
+            while InstantFishEnabled do
+                pcall(function()
+                    local success, _, rodGUID = pcall(function()
+                        return ChargeFishingRod:InvokeServer(workspace:GetServerTimeNow())
+                    end)
+
+                    if success and typeof(rodGUID) == "number" then
+                        local ProgressValue = -1
+                        local SuccessRate = 0.999
+
+                        task.wait(0.3)
+
+                        pcall(function()
+                            RequestFishingMinigame:InvokeServer(ProgressValue, SuccessRate, rodGUID)
+                        end)
+
+                        local WaitStart = tick()
+                        repeat
+                            task.wait()
+                        until _G.FishMiniData and _G.FishMiniData.LastShift or tick() - WaitStart > 1
+
+                        task.wait(InstantDelayComplete)
+
+                        pcall(function()
+                            FishingCompleted:FireServer()
+                        end)
+
+                        local CurrentCount = getFishCount()
+                        local CountWaitStart = tick()
+                        repeat
+                            task.wait()
+                        until CurrentCount < getFishCount() or tick() - CountWaitStart > 1
+
+                        pcall(function()
+                            CancelFishingInputs:InvokeServer()
+                        end)
+                    end
+                end)
+                task.wait()
+            end
+        end)
+    end
+end
+
+function getFishCount()
+    local BagSizeLabel = LocalPlayer.PlayerGui:WaitForChild("Inventory"):WaitForChild("Main"):WaitForChild("Top"):WaitForChild("Options"):WaitForChild("Fish"):WaitForChild("Label"):WaitForChild("BagSize")
+    return tonumber((BagSizeLabel.Text or "0/???"):match("(%d+)/")) or 0
+end
+
+fin:AddToggle({
+    Title = "Instant Fishing",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        if enabled then
+            pcall(function()
+                EquipToolFromHotbar:FireServer(1)
+            end)
+            task.wait(0.5)
+            StartInstantFishing(true)
+        else
+            StartInstantFishing(false)
+        end
+    end
+})
+
+fin:AddInput({
+    Title = "Complete Delay",
+    Placeholder = "0.1",
+    Callback = function(value)
+        local delay = tonumber(value)
+        if delay and delay >= 0 then
+            InstantDelayComplete = delay
+        end
+    end
+})
+
+local bts = Fishing:AddSection("Blatant")
+
+_G.FishingDelay = _G.FishingDelay or 1.1
+_G.Reel = _G.Reel or 1.9
+_G.FBlatant = _G.FBlatant or false
+
+function FastestFishing()
+    task.spawn(function()
+        pcall(function()
+            CancelFishingInputs:InvokeServer()
+        end)
+
+        local serverTime = workspace:GetServerTimeNow()
+
+        pcall(function()
+            ChargeFishingRod:InvokeServer(serverTime)
+        end)
+
+        pcall(function()
+            RequestFishingMinigame:InvokeServer(-1, 0.999)
+        end)
+
+        task.wait(_G.FishingDelay)
+
+        pcall(function()
+            FishingCompleted:FireServer()
+        end)
+    end)
+end
+
+function StartBlatantFishing()
+    _G.FBlatant = true
+
+    pcall(function()
+        EquipToolFromHotbar:FireServer(1)
+    end)
+
+    LocalPlayer:SetAttribute("Loading", nil)
+
+    task.spawn(function()
+        task.wait(0.5) -- Wait for rod to equip
+
+        while _G.FBlatant do
+            FastestFishing()
+            task.wait(_G.Reel)
+        end
+    end)
+end
+
+function StopBlatantFishing()
+    _G.FBlatant = false
+    LocalPlayer:SetAttribute("Loading", false)
+end
+
+function RecoveryFishing()
+    task.spawn(function()
+        pcall(function()
+            CancelFishingInputs:InvokeServer()
+        end)
+
+        LocalPlayer:SetAttribute("Loading", nil)
+        task.wait(0.05)
+        LocalPlayer:SetAttribute("Loading", false)
+    end)
+end
+
+function SetFishingDelay(delay)
+    local num = tonumber(delay)
+    if num and num > 0 then
+        _G.FishingDelay = num
+    end
+end
+
+function SetReelDelay(delay)
+    local num = tonumber(delay)
+    if num and num > 0 then
+        _G.Reel = num
+    end
+end
+
+bts:AddToggle({
+    Title = "Blatant Fishing",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        if enabled then
+            StartBlatantFishing()
+        else
+            StopBlatantFishing()
+        end
+    end
+})
+
+bts:AddInput({
+    Title = "Fishing Delay",
+    Placeholder = "1.1",
+    Callback = function(value)
+        SetFishingDelay(value)
+    end
+})
+
+bts:AddInput({
+    Title = "Reel Delay",
+    Placeholder = "1.9",
+    Callback = function(value)
+        SetReelDelay(value)
+    end
+})
+
+bts:AddButton({
+    Title = "Manual Fix Stuck",
+    Callback = function()
+        RecoveryFishing()
+        AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "| Manual Fix",
+            Content = "Stuck Fixed",
+            Delay = 2
+        })
+    end
+})
+
+local ench = Fishing:AddSection("Enchant")
+
+ench:AddToggle({
+    Title = "Auto Enchant Rod",
+    Content = "Automatically enchants your equipped rod.",
+    Default = false,
+    Callback = function()
+        local enchantPosition = Vector3.new(3231, -1303, 1402)
+        local character = workspace:WaitForChild("Characters"):FindFirstChild(LocalPlayer.Name)
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+        if hrp then
+            task.wait(3)
+
+            local slot5 = LocalPlayer.PlayerGui.Backpack.Display:GetChildren()[10]
+            local itemName = slot5 and slot5:FindFirstChild("Inner") and slot5.Inner:FindFirstChild("Tags") and slot5.Inner.Tags:FindFirstChild("ItemName")
+
+            if itemName and itemName.Text:lower():find("enchant") then
+                local originalPosition = hrp.Position
+                task.wait(1)
+                hrp.CFrame = CFrame.new(enchantPosition + Vector3.new(0, 5, 0))
+                task.wait(1.2)
+
+                pcall(function()
+                    EquipToolFromHotbar:FireServer(5)
+                    task.wait(0.5)
+                    ActivateEnchantingAltar:FireServer()
+                    task.wait(7)
+                end)
+
+                task.wait(0.9)
+                hrp.CFrame = CFrame.new(originalPosition + Vector3.new(0, 3, 0))
+            end
+        end
+    end
+})
+
+local ntf = Fishing:AddSection("Auto Fish Misc")
+
+local function ToggleCaughtNotifications(visible)
+    local notificationGui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("Small Notification")
+    if notificationGui then
+        local display = notificationGui:FindFirstChild("Display")
+        if display then
+            for _, child in ipairs(display:GetChildren()) do
+                if child:IsA("GuiObject") then
+                    child.Visible = visible
+                end
+            end
+        end
+    end
+end
+
+local noNOTIF = ntf:AddToggle({
+    Title = "Disable Fish Notification",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        ToggleCaughtNotifications(not enabled)
+    end
+})
+
+local stopAnimConnections = {}
+
+local function setGameAnimationsEnabled(state)
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    for _, conn in pairs(stopAnimConnections) do
+        pcall(function() conn:Disconnect() end)
+    end
+    stopAnimConnections = {}
+
+    if state then
+        local animator = humanoid:FindFirstChildOfClass("Animator")
+        if animator then
+            for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                pcall(function() track:Stop(0) end)
+            end
+
+            local conn = animator.AnimationPlayed:Connect(function(track)
+                task.defer(function()
+                    pcall(function() track:Stop(0) end)
+                end)
+            end)
+            table.insert(stopAnimConnections, conn)
+        end
+    end
+end
+
+local noANIMS = ntf:AddToggle({
+    Title = "Disable Animations",
+    Content = "",
+    Default = false,
+    Callback = function(state)
+        setGameAnimationsEnabled(state)
+    end
+})
+
+local originalCFrame = nil
+local freezeConnection = nil
+
+local freezeCHAR = ntf:AddToggle({
+    Title = "Freeze Character",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        _G.FreezeCharacter = enabled
+
+        if enabled then
+            local character = LocalPlayer.Character
+            local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+            if hrp then
+                originalCFrame = hrp.CFrame
+
+                if freezeConnection then
+                    freezeConnection:Disconnect()
+                    freezeConnection = nil
+                end
+
+                freezeConnection = RunService.Heartbeat:Connect(function()
+                    if _G.FreezeCharacter and hrp and hrp.Parent then
+                        hrp.CFrame = originalCFrame
+                        hrp.AssemblyLinearVelocity = Vector3.zero
+                        hrp.AssemblyAngularVelocity = Vector3.zero
+                    end
+                end)
+            end
+        else
+            if freezeConnection then
+                freezeConnection:Disconnect()
+                freezeConnection = nil
+            end
+        end
+    end
+})
+
+local rds = Shop:AddSection("Rod Shop")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RFPurchaseFishingRod = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RF/PurchaseFishingRod"]
+
+local rods = {
+    ["Luck Rod"] = 79,
+    ["Carbon Rod"] = 76,
+    ["Grass Rod"] = 85,
+    ["Demascus Rod"] = 77,
+    ["Ice Rod"] = 78,
+    ["Lucky Rod"] = 4,
+    ["Midnight Rod"] = 80,
+    ["Steampunk Rod"] = 6,
+    ["Chrome Rod"] = 7,
+    ["Astral Rod"] = 5,
+    ["Ares Rod"] = 126,
+    ["Angler Rod"] = 168
+})
+local rodNames = {
+    "Luck Rod", "Carbon Rod", "Grass Rod", "Demascus Rod",
+    "Ice Rod", "Lucky Rod", "Midnight Rod", "Steampunk Rod",
+    "Chrome Rod", "Astral Rod", "Ares Rod", "Angler Rod"
+}
+
+local rodKeyMap = {
+    ["Luck Rod"]="Luck Rod",
+    ["Carbon Rod"]="Carbon Rod",
+    ["Grass Rod"]="Grass Rod",
+    ["Demascus Rod"]="Demascus Rod",
+    ["Ice Rod"]="Ice Rod",
+    ["Lucky Rod"]="Lucky Rod",
+    ["Midnight Rod"]="Midnight Rod",
+    ["Steampunk Rod"]="Steampunk Rod",
+    ["Chrome Rod"]="Chrome Rod",
+    ["Astral Rod"]="Astral Rod",
+    ["Ares Rod"]="Ares Rod",
+    ["Angler Rod"]="Angler Rod"
+}
+
+local selectedRod = rodNames[1]
+
+local selectROS = rds:AddDropdown({
+    Title = "Select Rod",
+    Content = "",
+    Options = rodNames,
+    Multi = false,
+    Default = selectedRod,
+    Callback = function(value)
+        if type(value) == "table" then
+            selectedRod = value[1] or rodNames[1]
+        else
+            selectedRod = value
+        end
+    end
+})
+
+rds:AddButton({
+    Title = "Buy Rod",
+    Content = "",
+    Callback = function()
+        local key = rodKeyMap[selectedRod]
+
+        if key and rods[key] then
+            local rodId = rods[key]
+
+            local success, err = pcall(function()
+                RFPurchaseFishingRod:InvokeServer(rodId)
+            end)
+
+            if success then
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Rod Purchase", 
+                    Content = "Purchased " .. selectedRod, 
+                    Delay = 3
+                })
+            else
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Rod Purchase Error", 
+                    Content = tostring(err), 
+                    Delay = 5
+                })
+            end
+        else
+                AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error", 
+                Content = "Invalid rod selection", 
+                Delay = 3
+            })
+        end
+    end
+})
+
+local bs = Shop:AddSection("Bait Shop")
+
+local RFPurchaseBait = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RF/PurchaseBait"]
+
+local baits = {
+    ["TopWater Bait"] = 10,
+    ["Lucky Bait"] = 2,
+    ["Midnight Bait"] = 3,
+    ["Chroma Bait"] = 6,
+    ["Dark Mater Bait"] = 8,
+    ["Corrupt Bait"] = 15,
+    ["Aether Bait"] = 16
+}
+
+local baitNames = {
+    "TopWater Bait",
+    "Lucky Bait",
+    "Midnight Bait",
+    "Chroma Bait",
+    "Dark Mater Bait",
+    "Corrupt Bait",
+    "Aether Bait"
+}
+
+local baitKeyMap = {
+    ["TopWater Bait"] = "TopWater Bait",
+    ["Lucky Bait"] = "Lucky Bait",
+    ["Midnight Bait"] = "Midnight Bait",
+    ["Chroma Bait"] = "Chroma Bait",
+    ["Dark Mater Bait"] = "Dark Mater Bait",
+    ["Corrupt Bait"] = "Corrupt Bait",
+    ["Aether Bait"] = "Aether Bait"
+}
+
+local selectedBait = baitNames[1]
+
+local selectBAIT = bs:AddDropdown({
+    Title = "Select Bait",
+    Content = "",
+    Options = baitNames,
+    Default = selectedBait,
+    Multi = false,
+    Callback = function(value)
+        if type(value) == "table" then
+            selectedBait = value[1] or baitNames[1]
+        else
+            selectedBait = value
+        end
+    end
+})
+
+bs:AddButton({
+    Title = "Buy Bait",
+    Content = "",
+    Callback = function()
+        local key = baitKeyMap[selectedBait]
+
+        if key and baits[key] then
+            local baitId = baits[key]
+
+            local success, err = pcall(function()
+                RFPurchaseBait:InvokeServer(baitId)
+            end)
+
+            if success then
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Bait Purchase",
+                    Content = "Purchased " .. selectedBait,
+                    Delay = 3
+                })
+            else
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Bait Purchase Error",
+                    Content = tostring(err),
+                    Delay = 5
+                })
+            end
+        else
+                AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error",
+                Content = "Invalid bait selection",
+                Delay = 3
+            })
+        end
+    end
+})
+
+local bos = Shop:AddSection("Boat Shop")
+
+local RFPurchaseBoat = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RF/PurchaseBoat"]
+
+local boatOrder = {
+    "Small Boat",
+    "Kayak",
+    "Jetski",
+    "Highfield",
+    "Speed Boat",
+    "Fishing Boat",
+    "Mini Yacht",
+    "Hyper Boat",
+    "Frozen Boat",
+    "Cruiser Boat"
+}
+
+local boats = {
+    ["Small Boat"] = {Id = 1, Price = 300},
+    ["Kayak"] = {Id = 2, Price = 1100},
+    ["Jetski"] = {Id = 3, Price = 7500},
+    ["Highfield"] = {Id = 4, Price = 25000},
+    ["Speed Boat"] = {Id = 5, Price = 70000},
+    ["Fishing Boat"] = {Id = 6, Price = 180000},
+    ["Mini Yacht"] = {Id = 14, Price = 1200000},
+    ["Hyper Boat"] = {Id = 7, Price = 999000},
+    ["Frozen Boat"] = {Id = 11, Price = 0},
+    ["Cruiser Boat"] = {Id = 13, Price = 0}
+}
+
+local boatNames = {}
+for _, name in ipairs(boatOrder) do
+    local data = boats[name]
+    local priceStr
+    if data.Price >= 1000000 then
+        priceStr = string.format("%.2fM Coins", data.Price/1000000)
+    elseif data.Price >= 1000 then
+        priceStr = string.format("%.0fk Coins", data.Price/1000)
+    else
+        priceStr = data.Price.." Coins"
+    end
+    table.insert(boatNames, name.." ("..priceStr..")")
+end
+
+local boatKeyMap = {}
+for _, displayName in ipairs(boatNames) do
+    local nameOnly = displayName:match("^(.-) %(")
+    boatKeyMap[displayName] = nameOnly
+end
+
+local selectedBoat = boatNames[1]
+
+local selectBOAT = bos:AddDropdown({
+    Title = "Select Boat",
+    Content = "",
+    Options = boatNames,
+    Default = selectedBoat,
+    Multi = false,
+    Callback = function(value)
+        if type(value) == "table" then
+            selectedBoat = value[1] or boatNames[1]
+        else
+            selectedBoat = value
+        end
+    end
+})
+bos:AddButton({
+    Title = "Buy Boat",
+    Content = "",
+    Callback = function()
+        local key = boatKeyMap[selectedBoat]
+
+        if key and boats[key] then
+            local boatId = boats[key].Id
+
+            local success, err = pcall(function()
+                RFPurchaseBoat:InvokeServer(boatId)
+            end)
+
+            if success then
+                    AIKO:MakeNotify({
+                    Title = "@Charles",
+                    Description = "| Boat Purchase",
+                    Content = "Purchased " .. selectedBoat,
+                    Delay = 3
+                })
+            else
+                    AIKO:MakeNotify({
+                    Title = "@charles",
+                    Description = "| Boat Purchase Error",
+                    Content = tostring(err),
+                    Delay = 5
+                })
+            end
+        else
+                AIKO:MakeNotify({
+                Title = "@charles",
+                Description = "| Error",
+                Content = "Invalid boat selection",
+                Delay = 3
+            })
+        end
+    end
+})
+
+local ws = Shop:AddSection("Weather Shop")
+
+local weathers = {
+    ["Wind"] = 10000,
+    ["Snow"] = 15000,
+    ["Cloudy"] = 20000,
+    ["Storm"] = 35000,
+    ["Radiant"] = 50000,
+    ["Shark Hunt"] = 300000
+}
+
+local weatherNames = {
+    "Wind", "Snow", "Cloudy", "Storm",
+    "Radiant", "Shark Hunt"
+}
+
+local weatherKeyMap = {
+    ["Wind"] = "Wind",
+    ["Snow"] = "Snow",
+    ["Cloudy"] = "Cloudy",
+    ["Storm"] = "Storm",
+    ["Radiant"] = "Radiant",
+    ["Shark Hunt"] = "Shark Hunt"
+}
+
+local selectedWeathers = {}
+
+local selectWEATHER = ws:AddDropdown({
+    Title = "Select Weather(s)",
+    Content = "",
+    Options = weatherNames,
+    Default = {},
+    Multi = true,
+    Callback = function(values)
+        selectedWeathers = values
+    end
+})
+
+local autoBuyEnabled = false
+local buyDelay = 0.
+
+local function startAutoBuy()
+    task.spawn(function()
+        while autoBuyEnabled do
+            for _, displayName in ipairs(selectedWeathers) do
+                local key = weatherKeyMap[displayName]
+                if key and weathers[key] then
+                    local success, err = pcall(function()
+                        RFPurchaseWeatherEvent:InvokeServer(key)
+                    end)
+                    if not success then
+                        aiko("Error buying weather:", err)
+                    end
+                    task.wait(buyDelay)
+                end
+            end
+            task.wait(0.1)
+        end
+    end)
+end
+
+local autobuyweather = ws:AddToggle({
+    Title = "Auto Buy Weather",
+    Content = "Automatically purchase selected weather(s).",
+    Default = false,
+    Callback = function(state)
+        autoBuyEnabled = state
+        if state then
+            startAutoBuy()
+        end
+    end
+})
+
+local merch = Shop:AddSection("Merchant")
+
+local MerchantUI = {
+    Main = PlayerGui.Merchant,
+    ItemsFrame = PlayerGui.Merchant.Main.Background.Items.ScrollingFrame,
+    RefreshLabel = PlayerGui.Merchant.Main.Background.RefreshLabel
+}
+
+ShopParagraph = merch:AddParagraph({
+    Title = "Merchant Stock:",
+    Icon = "shop",
+    Content = "Loading..."
+})
+
+merch:AddButton({
+    Title = "Toggle Merchant UI",
+    Callback = function()
+        local merchant = PlayerGui:FindFirstChild("Merchant")
+        if merchant then
+            merchant.Enabled = not merchant.Enabled
+        end
+    end
+})
+
+function UPX()
+    local items = {}
+    
+    for _, child in ipairs(MerchantUI.ItemsFrame:GetChildren()) do
+        if child:IsA("ImageLabel") and child.Name ~= "Frame" then
+            local frame = child:FindFirstChild("Frame")
+            if frame and frame:FindFirstChild("ItemName") then
+                local itemName = frame.ItemName.Text
+                if not string.find(itemName, "Mystery") then
+                    table.insert(items, "- " .. itemName)
+                end
+            end
+        end
+    end
+    
+    if #items > 0 then
+        ShopParagraph:SetContent(table.concat(items, "<br/>") .. "<br/><br/>" .. MerchantUI.RefreshLabel.Text)
+    else
+        ShopParagraph:SetContent("No items found\n" .. MerchantUI.RefreshLabel.Text)
+    end
+end
+
 task.spawn(function()
-	while runMeteor do
-		meteor()
-		task.wait(0.2)
-	end
+    while task.wait(1) do
+        pcall(UPX)
+    end
 end)
 
-local LoadBox = Instance.new("Frame", LoadingScreen)
-LoadBox.Size = UDim2.new(0,280,0,90)
-LoadBox.Position = UDim2.new(0.5,-140,0.5,-45)
-LoadBox.BackgroundColor3 = SidebarColor
-Instance.new("UICorner",LoadBox)
-Instance.new("UIStroke",LoadBox).Color = SuccessGreen
+local sell = Shop:AddSection("Sell")
 
-local LoadText = Instance.new("TextLabel", LoadBox)
-LoadText.Size = UDim2.new(1,0,0,40)
-LoadText.Text = "Charles Hub Memuat"
-LoadText.BackgroundTransparency = 1
-LoadText.Font = Enum.Font.GothamBold
-LoadText.TextSize = 18
-LoadText.TextColor3 = Color3.new(1,1,1)
+local sellThreshold = 30
+local autoSellEnabled = false
 
-local BarBg = Instance.new("Frame", LoadBox)
-BarBg.Size = UDim2.new(0.8,0,0,5)
-BarBg.Position = UDim2.new(0.1,0,0,65)
-BarBg.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner",BarBg)
+local sellDELAY = sell:AddInput({
+    Title = "Auto Sell Delay",
+    Content = "",
+    Placeholder = "30",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num and num > 0 then
+            sellThreshold = num
+        end
+    end
+})
 
-local BarFill = Instance.new("Frame", BarBg)
-BarFill.Size = UDim2.new(0,0,1,0)
-BarFill.BackgroundColor3 = SuccessGreen
-Instance.new("UICorner",BarFill)
+local autoSELL = sell:AddToggle({
+    Title = "Auto Sell",
+    Content = "Sell when threshold reached.",
+    Default = false,
+    Callback = function(state)
+        autoSellEnabled = state
 
--- MAIN
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0,400,0,260)
-MainFrame.Position = UDim2.new(0.5,-200,0.5,-130)
-MainFrame.BackgroundColor3 = BgColor
-MainFrame.Visible = false
-MainFrame.ClipsDescendants = true
-Instance.new("UICorner",MainFrame)
-Instance.new("UIStroke",MainFrame).Color = MainBlue
+        if state then
+            task.spawn(function()
+                while autoSellEnabled do
+                    task.wait(5)
 
--- TOPBAR
-local TopBar = Instance.new("Frame", MainFrame)
-TopBar.Size = UDim2.new(1,0,0,35)
-TopBar.BackgroundColor3 = Color3.fromRGB(25,25,25)
+                    local Replion = require(ReplicatedStorage.Packages.Replion)
+                    local Data = Replion.Client:WaitReplion("Data")
+                    local inventoryData = Data:Get("Inventory")
 
-local Title = Instance.new("TextLabel", TopBar)
-Title.Text = "☄️   Charles Hub"
-Title.Size = UDim2.new(1,-80,1,0)
-Title.Position = UDim2.new(0,12,0,0)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.new(1,1,1)
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = 0
-Title.TextSize = 13
+                    if inventoryData and inventoryData.Items then
+                        local count = 0
+                        for _ in pairs(inventoryData.Items) do
+                            count = count + 1
+                        end
 
-local CloseBtn = Instance.new("TextButton", TopBar)
-CloseBtn.Text = "X"
-CloseBtn.Size = UDim2.new(0,22,0,22)
-CloseBtn.Position = UDim2.new(1,-28,0,6)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
-CloseBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner",CloseBtn)
+                        if count >= sellThreshold then
+                            SellAllItems:InvokeServer()
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
 
-local MinBtn = Instance.new("TextButton", TopBar)
-MinBtn.Text = "-"
-MinBtn.Size = UDim2.new(0,22,0,22)
-MinBtn.Position = UDim2.new(1,-55,0,6)
-MinBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-MinBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner",MinBtn)
+sell:AddButton({
+    Title = "Sell All Fish",
+    Content = "Instanly sells non-favorite fish.",
+    Callback = function()
+        local RFSellAllItems = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RF/SellAllItems"]
 
--- SIDEBAR
-local Sidebar = Instance.new("Frame", MainFrame)
-Sidebar.Size = UDim2.new(0,110,1,-35)
-Sidebar.Position = UDim2.new(0,0,0,35)
-Sidebar.BackgroundColor3 = SidebarColor
-local SideList = Instance.new("UIListLayout", Sidebar)
-SideList.Padding = UDim.new(0,6)
-SideList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-Instance.new("UIPadding",Sidebar).PaddingTop = UDim.new(0,8)
+        pcall(function()
+            RFSellAllItems:InvokeServer()
+        end)
 
--- PAGE
-local PageContainer = Instance.new("Frame", MainFrame)
-PageContainer.Size = UDim2.new(1,-120,1,-45)
-PageContainer.Position = UDim2.new(0,115,0,40)
-PageContainer.BackgroundTransparency = 1
+    end
+})
 
-local function CreateTab(name,icon)
-	local Btn = Instance.new("TextButton", Sidebar)
-	Btn.Size = UDim2.new(0.9,0,0,30)
-	Btn.BackgroundColor3 = AccentColor
-	Btn.Text = icon.." "..name
-	Btn.Font = Enum.Font.GothamBold
-	Btn.TextSize = 11
-	Btn.TextColor3 = Color3.new(1,1,1)
-	Instance.new("UICorner",Btn)
+_G.AutoFavoriteRarities = _G.AutoFavoriteRarities or {}
 
-	local Page = Instance.new("ScrollingFrame", PageContainer)
-	Page.Size = UDim2.new(1,0,1,0)
-	Page.Visible = false
-	Page.ScrollBarThickness = 2
-	Page.BackgroundTransparency = 1
-	local L = Instance.new("UIListLayout",Page)
-	L.Padding = UDim.new(0,12)
+local fav = Favo:AddSection("Auto Favorite")
 
-	Btn.MouseButton1Click:Connect(function()
-		for _,v in pairs(PageContainer:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible=false end end
-		for _,v in pairs(Sidebar:GetChildren()) do if v:IsA("TextButton") then v.BackgroundColor3=AccentColor end end
-		Page.Visible=true
-		Btn.BackgroundColor3=MainBlue
-	end)
-	return Page
+local GlobalFav = {
+    REObtainedNewFishNotification = net:WaitForChild("RE/ObtainedNewFishNotification"),
+    REFavoriteItem = net:WaitForChild("RE/FavoriteItem"),
+
+    FishIdToName = {},
+    FishNameToId = {},
+    FishIdToTier = {},
+    FishNames = {},
+    Variants = {},
+    VariantIdToName = {},
+    VariantNameToId = {},
+
+    SelectedFishIds = {},
+    SelectedVariants = {},
+    SelectedRarities = {},
+    AutoFavoriteEnabled = false
+}
+
+for _, item in pairs(ReplicatedStorage.Items:GetChildren()) do
+    local ok, data = pcall(require, item)
+    if ok and data.Data and data.Data.Type == "Fish" then
+        local id = data.Data.Id
+        local name = data.Data.Name
+        local tier = data.Data.Tier
+        GlobalFav.FishIdToName[id] = name
+        GlobalFav.FishNameToId[name] = id
+        GlobalFav.FishIdToTier[id] = tier
+        table.insert(GlobalFav.FishNames, name)
+    end
 end
 
-local FishingPage = CreateTab("Fishing","🐟")
-FishingPage.Visible = true
-
--- TOGGLE
-local function Toggle(parent,text,callback)
-	local Box = Instance.new("Frame",parent)
-	Box.Size = UDim2.new(0.95,0,0,50)
-	Box.BackgroundColor3 = AccentColor
-	Instance.new("UICorner",Box)
-
-	local L = Instance.new("TextLabel",Box)
-	L.Text=text
-	L.Size=UDim2.new(1,-60,1,0)
-	L.Position=UDim2.new(0,10,0,0)
-	L.BackgroundTransparency=1
-	L.TextColor3=Color3.new(1,1,1)
-	L.Font=Enum.Font.GothamBold
-	L.TextXAlignment=0
-	L.TextSize=12
-
-	local B = Instance.new("TextButton",Box)
-	B.Size=UDim2.new(0,40,0,20)
-	B.Position=UDim2.new(1,-50,0.5,-10)
-	B.BackgroundColor3=Color3.fromRGB(50,50,50)
-	B.Text=""
-	Instance.new("UICorner",B).CornerRadius=UDim.new(1,0)
-
-	local C = Instance.new("Frame",B)
-	C.Size=UDim2.new(0,16,0,16)
-	C.Position=UDim2.new(0,2,0.5,-8)
-	C.BackgroundColor3=Color3.new(1,1,1)
-	Instance.new("UICorner",C).CornerRadius=UDim.new(1,0)
-
-	local on=false
-	B.MouseButton1Click:Connect(function()
-		on=not on
-		TweenService:Create(C,TweenInfo.new(0.25),{Position=on and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8)}):Play()
-		TweenService:Create(B,TweenInfo.new(0.25),{BackgroundColor3=on and SuccessGreen or Color3.fromRGB(50,50,50)}):Play()
-		callback(on)
-	end)
+for _, variantModule in pairs(ReplicatedStorage.Variants:GetChildren()) do
+    local ok, variantData = pcall(require, variantModule)
+    if ok and variantData.Data then
+        local id = variantData.Data.Id
+        local name = variantData.Data.Name
+        if id and name then
+            GlobalFav.VariantIdToName[id] = name
+            GlobalFav.VariantNameToId[name] = id
+            table.insert(GlobalFav.Variants, name)
+        end
+    end
 end
 
--- LEGIT AUTO FISH
-local Fishing=false
-Toggle(FishingPage,"Legit Auto Fishing (Heavy)",function(v)
-	Fishing=v
-	task.spawn(function()
-		while Fishing do
-			task.wait(math.random(12,25)/10)
-			VirtualUser:Button1Down(Vector2.new(),workspace.CurrentCamera.CFrame)
-			task.wait(math.random(2,4)/10)
-			VirtualUser:Button1Up(Vector2.new(),workspace.CurrentCamera.CFrame)
-		end
-	end)
+table.sort(GlobalFav.FishNames)
+table.sort(GlobalFav.Variants)
+
+local TierNames = {
+    ["Common"] = "Common",
+    ["Uncommon"] = "Uncommon", 
+    ["Rare"] = "Rare",
+    ["Epic"] = "Epic",
+    ["Legendary"] = "Legendary",
+    ["Mythic"] = "Mythic",
+    ["Secret"] = "Secret",
+    [1] = "Common",
+    [2] = "Uncommon",
+    [3] = "Rare",
+    [4] = "Epic",
+    [5] = "Legendary",
+    [6] = "Mythic",
+    [7] = "Secret",
+    [0] = "Common"
+}
+
+local function GetTierName(tier)
+    if type(tier) == "string" then
+        return TierNames[tier] or tier
+    elseif type(tier) == "number" then
+        return TierNames[tier] or "Unknown"
+    else
+        return "Unknown"
+    end
+end
+
+local autoFAV = fav:AddToggle({
+    Title = "Enable Auto Favorite",
+    Content = "",
+    Default = false,
+    Callback = function(state)
+        GlobalFav.AutoFavoriteEnabled = state
+    end
+})
+
+local selectFishes = fav:AddDropdown({
+    Title = "Select Fish",
+    Content = "",
+    Options = GlobalFav.FishNames,
+    Multi = true,
+    Default = {},
+    Callback = function(selectedNames)
+        GlobalFav.SelectedFishIds = {}
+        for _, name in ipairs(selectedNames) do
+            local id = GlobalFav.FishNameToId[name]
+            if id then
+                GlobalFav.SelectedFishIds[id] = true
+            end
+        end
+    end
+})
+
+local selectRarities = fav:AddDropdown({
+    Title = "Rarity",
+    Content = "",
+    Options = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"},
+    Multi = true,
+    Default = {},
+    Callback = function(selectedRarities)
+        _G.AutoFavoriteRarities = {}
+        GlobalFav.SelectedRarities = {}
+        
+        for _, rarity in ipairs(selectedRarities) do
+            _G.AutoFavoriteRarities[rarity] = true
+            GlobalFav.SelectedRarities[rarity] = true
+        end
+        
+        local count = 0
+        for _ in pairs(_G.AutoFavoriteRarities) do
+            count = count + 1
+        end
+    end
+})
+
+local selectMutations = fav:AddDropdown({
+    Title = "Select Mutation",
+    Content = "",
+    Options = GlobalFav.Variants,
+    Multi = true,
+    Default = {},
+    Callback = function(selectedNames)
+        GlobalFav.SelectedVariants = {}
+        for _, name in ipairs(selectedNames) do
+            local id = GlobalFav.VariantNameToId[name]
+            if id then
+                GlobalFav.SelectedVariants[id] = true
+            end
+        end
+    end
+})
+
+GlobalFav.REObtainedNewFishNotification.OnClientEvent:Connect(function(itemId, _, data)
+    if not GlobalFav.AutoFavoriteEnabled then return end
+
+    local uuid = data.InventoryItem and data.InventoryItem.UUID
+    if not uuid then return end
+
+    local fishName = GlobalFav.FishIdToName[itemId] or "Unknown"
+    local fishTier = GlobalFav.FishIdToTier[itemId]
+    local tierName = GetTierName(fishTier)
+    local variantId = data.InventoryItem.Metadata and data.InventoryItem.Metadata.VariantId
+
+    local shouldFavorite = false
+    local reason = ""
+
+    local isFishSelected = GlobalFav.SelectedFishIds[itemId]
+    
+    local isRaritySelected = GlobalFav.SelectedRarities[tierName] == true
+    
+    local isVariantSelected = variantId and GlobalFav.SelectedVariants[variantId]
+
+    if isFishSelected then
+        shouldFavorite = true
+        reason = "Fish: " .. fishName
+    end
+
+    if isRaritySelected then
+        shouldFavorite = true
+        reason = reason .. (reason ~= "" and " + " or "") .. "Rarity: " .. tierName
+    end
+
+    if isVariantSelected then
+        shouldFavorite = true
+        local variantName = GlobalFav.VariantIdToName[variantId] or "Unknown Variant"
+        reason = reason .. (reason ~= "" and " + " or "") .. "Variant: " .. variantName
+    end
+
+    if shouldFavorite then
+        pcall(function()
+            GlobalFav.REFavoriteItem:FireServer(uuid)
+        end)
+    end
 end)
 
--- ANTI AFK
-Toggle(FishingPage,"Anti AFK",function(v)
-	if v then
-		task.spawn(function()
-			while v do
-				task.wait(30)
-				VirtualUser:Button2Down(Vector2.new(),workspace.CurrentCamera.CFrame)
-				task.wait(0.2)
-				VirtualUser:Button2Up(Vector2.new(),workspace.CurrentCamera.CFrame)
-			end
-		end)
-	end
+fav:AddButton({
+    Title = "Clear Rarity Selection",
+    Content = "Clear all selected rarities",
+    Callback = function()
+        _G.AutoFavoriteRarities = {}
+        GlobalFav.SelectedRarities = {}
+        AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "| Cleared",
+            Content = "Rarity selection cleared",
+            Delay = 2
+        })
+    end
+})
+
+fav:AddButton({
+    Title = "Clear Variant Selection",
+    Content = "Clear all selected variants",
+    Callback = function()
+        GlobalFav.SelectedVariants = {}
+        AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "| Cleared",
+            Content = "Variant selection cleared",
+            Delay = 2
+        })
+    end
+})
+
+local TeleportData = loadstring(game:HttpGet("https://raw.githubusercontent.com/a11bove/kdoaz/refs/heads/main/xzc/fishit/tpmdl.lua"))()
+
+local loc = Teleport:AddSection("Location")
+
+local locationNames = {}
+for name, _ in pairs(TeleportData.Locations) do
+    table.insert(locationNames, name)
+end
+table.sort(locationNames)
+
+local selectedLocation = nil
+
+local locationDropdown = loc:AddDropdown({
+    Title = "Select Location",
+    Content = "",
+    Multi = false,
+    Options = locationNames,
+    Default = {},
+    Callback = function(value)
+        if type(value) == "table" and #value > 0 then
+            selectedLocation = value[1]
+        elseif type(value) == "string" then
+            selectedLocation = value
+        else
+            selectedLocation = nil
+        end
+    end
+})
+
+loc:AddButton({
+    Title = "Teleport to Location",
+    Content = "",
+    Callback = function()
+        if selectedLocation and TeleportData.Locations[selectedLocation] then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(TeleportData.Locations[selectedLocation])
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Teleported",
+                    Content = "Teleported to " .. selectedLocation,
+                    Delay = 3
+                })
+            end
+        else
+                AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error",
+                Content = "No location selected",
+                Delay = 3
+            })
+        end
+    end
+})
+
+local npcl = Teleport:AddSection("NPC")
+
+local npcNames = {}
+for name, _ in pairs(TeleportData.NPCs) do
+    table.insert(npcNames, name)
+end
+table.sort(npcNames)
+
+local selectedNPC = nil
+
+local npcDropdown = npcl:AddDropdown({
+    Title = "Select NPC",
+    Content = "",
+    Options = npcNames,
+    Default = {},
+    Multi = false,
+    Callback = function(value)
+        if type(value) == "table" and #value > 0 then
+            selectedNPC = value[1]
+        elseif type(value) == "string" then
+            selectedNPC = value
+        else
+            selectedNPC = nil
+        end
+    end
+})
+
+npcl:AddButton({
+    Title = "Teleport to NPC",
+    Content = "",
+    Callback = function()
+        if selectedNPC and TeleportData.NPCs[selectedNPC] then
+            local targetCFrame = TeleportData.NPCs[selectedNPC]
+            local character = LocalPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                character:PivotTo(targetCFrame)
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Teleported",
+                    Content = "Teleported to " .. selectedNPC,
+                    Delay = 3
+                })
+            end
+        else
+                AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error",
+                Content = "No NPC selected",
+                Delay = 3
+            })
+        end
+    end
+})
+
+local mach = Teleport:AddSection("Machines")
+
+local machineNames = {}
+for name, _ in pairs(TeleportData.Machines) do
+    table.insert(machineNames, name)
+end
+table.sort(machineNames)
+
+local selectedMachine = nil
+
+local machineDropdown = mach:AddDropdown({
+    Title = "Select Machine",
+    Content = "",
+    Options = machineNames,
+    Default = {},
+    Multi = false,
+    Callback = function(value)
+        if type(value) == "table" and #value > 0 then
+            selectedMachine = value[1]
+        elseif type(value) == "string" then
+            selectedMachine = value
+        else
+            selectedMachine = nil
+        end
+    end
+})
+
+mach:AddButton({
+    Title = "Teleport to Machine",
+    Content = "",
+    Callback = function()
+        if selectedMachine and TeleportData.Machines[selectedMachine] then
+            local targetCFrame = TeleportData.Machines[selectedMachine]
+            local character = LocalPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                character:PivotTo(targetCFrame)
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Teleported",
+                    Content = "Teleported to " .. selectedMachine,
+                    Delay = 3
+                })
+            end
+        else
+                AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error",
+                Content = "No machine selected",
+                Delay = 3
+            })
+        end
+    end
+})
+
+local EventSettings = {
+    autoEventActive = false,
+    selectedEvents = {},
+    priorityEvent = nil,
+    currentCFrame = nil,
+    originalCFrame = nil,
+    floatingEnabled = false,
+    floatingConnection = nil,
+    lastState = nil,
+    offsets = {
+        ["Worm Hunt"] = 25
+    }
+}
+
+local IgnoredEvents = {
+    Cloudy = true,
+    Day = true,
+    ["Increased Luck"] = true,
+    Mutated = true,
+    Night = true,
+    Snow = true,
+    ["Sparkling Cove"] = true,
+    Storm = true,
+    Wind = true,
+    UIListLayout = true,
+    ["Admin - Shocked"] = true,
+    ["Admin - Super Mutated"] = true,
+    Radiant = true
+}
+
+local function getCharacterRoot(character)
+    if character then
+        return character:FindFirstChild("HumanoidRootPart") or 
+               character:FindFirstChildWhichIsA("BasePart")
+    end
+    return nil
+end
+
+local function setupWaterWalking(character, rootPart, enabled)
+    if EventSettings.floatingEnabled and EventSettings.floatingConnection then
+        EventSettings.floatingConnection:Disconnect()
+    end
+    
+    EventSettings.floatingEnabled = enabled or false
+    
+    if enabled then
+        local waterPart = Workspace:FindFirstChild("WW_Part") or Instance.new("Part")
+        waterPart.Name = "WW_Part"
+        waterPart.Size = Vector3.new(15, 1, 15)
+        waterPart.Anchored = true
+        waterPart.CanCollide = false
+        waterPart.Transparency = 1
+        waterPart.Material = Enum.Material.SmoothPlastic
+        waterPart.Parent = Workspace
+        
+        local waterLevel = -1.8
+        
+        EventSettings.floatingConnection = RunService.Heartbeat:Connect(function()
+            if character and rootPart and waterPart then
+                waterPart.Position = Vector3.new(rootPart.Position.X, waterLevel, rootPart.Position.Z)
+                waterPart.CanCollide = waterLevel < rootPart.Position.Y
+            end
+        end)
+    else
+        local existingPart = Workspace:FindFirstChild("WW_Part")
+        if existingPart then
+            existingPart:Destroy()
+        end
+    end
+end
+
+local function getAvailableEvents()
+    local events = {}
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    local eventsGui = playerGui:FindFirstChild("Events")
+    
+    if not eventsGui then return events end
+    
+    local frame = eventsGui:FindFirstChild("Frame")
+    if frame then
+        frame = frame:FindFirstChild("Events")
+    end
+    
+    if frame then
+        for _, child in ipairs(frame:GetChildren()) do
+            local displayName = nil
+            
+            if child:IsA("Frame") then
+                local displayLabel = child:FindFirstChild("DisplayName")
+                if displayLabel and displayLabel:IsA("TextLabel") then
+                    displayName = displayLabel.Text
+                end
+            end
+            
+            if not displayName or displayName == "" then
+                displayName = child.Name
+            end
+            
+            if typeof(displayName) == "string" and 
+               displayName ~= "" and 
+               displayName ~= "UIListLayout" and
+               not IgnoredEvents[displayName] then
+                local cleanName = displayName:gsub("^Admin %- ", "")
+                table.insert(events, cleanName)
+            end
+        end
+    end
+    
+    return events
+end
+
+local function findEventLocation(eventName)
+    if not eventName then return nil end
+    
+    if eventName == "Megalodon Hunt" then
+        local menuRings = Workspace:FindFirstChild("!!! MENU RINGS")
+        if menuRings then
+            for _, ring in ipairs(menuRings:GetChildren()) do
+                local megalodonEvent = ring:FindFirstChild("Megalodon Hunt")
+                if megalodonEvent then
+                    megalodonEvent = megalodonEvent:FindFirstChild("Megalodon Hunt")
+                end
+                
+                if megalodonEvent and megalodonEvent:IsA("BasePart") then
+                    return megalodonEvent
+                end
+            end
+        end
+    else
+        local propsLocations = {Workspace:FindFirstChild("Props")}
+        local menuRings = Workspace:FindFirstChild("!!! MENU RINGS")
+        
+        if menuRings then
+            for _, ring in ipairs(menuRings:GetChildren()) do
+                if ring.Name:match("^Props") then
+                    table.insert(propsLocations, ring)
+                end
+            end
+        end
+        
+        for _, propsFolder in ipairs(propsLocations) do
+            if propsFolder then
+                for _, model in ipairs(propsFolder:GetChildren()) do
+                    for _, descendant in ipairs(model:GetDescendants()) do
+                        if descendant:IsA("TextLabel") and 
+                           descendant.Name == "DisplayName" then
+                            local text = (descendant.ContentText ~= "" and 
+                                        descendant.ContentText) or descendant.Text
+                            
+                            if text:lower() == eventName:lower() then
+                                local parentModel = descendant:FindFirstAncestorOfClass("Model")
+                                local part = parentModel and 
+                                           parentModel:FindFirstChild("Part") or 
+                                           model:FindFirstChild("Part")
+                                
+                                if part and part:IsA("BasePart") then
+                                    return part
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return nil
+end
+
+local function updateEventStatus(message)
+    if EventSettings.lastState ~= message then
+        EventSettings.lastState = message
+    end
+end
+
+function EventSettings.loop()
+    while EventSettings.autoEventActive do
+        local targetEvent = nil
+        local targetLocation = nil
+        
+        if EventSettings.priorityEvent then
+            targetLocation = findEventLocation(EventSettings.priorityEvent)
+            if targetLocation then
+                targetEvent = EventSettings.priorityEvent
+            end
+        end
+        
+        if not targetLocation and #EventSettings.selectedEvents > 0 then
+            for _, eventName in ipairs(EventSettings.selectedEvents) do
+                targetLocation = findEventLocation(eventName)
+                if targetLocation then
+                    targetEvent = eventName
+                    break
+                end
+            end
+        end
+        
+        local rootPart = getCharacterRoot(LocalPlayer.Character)
+        
+        if targetLocation and rootPart then
+            if not EventSettings.originalCFrame then
+                EventSettings.originalCFrame = rootPart.CFrame
+            end
+            
+            if (rootPart.Position - targetLocation.Position).Magnitude > 40 then
+                local offset = EventSettings.offsets[targetEvent] or 7
+                EventSettings.currentCFrame = targetLocation.CFrame + Vector3.new(0, offset, 0)
+                LocalPlayer.Character:PivotTo(EventSettings.currentCFrame)
+                setupWaterWalking(LocalPlayer.Character, rootPart, true)
+                task.wait(1)
+                updateEventStatus("Event! " .. targetEvent)
+            end
+        elseif not targetLocation and EventSettings.currentCFrame and rootPart then
+            setupWaterWalking(LocalPlayer.Character, nil, false)
+            if EventSettings.originalCFrame then
+                LocalPlayer.Character:PivotTo(EventSettings.originalCFrame)
+                updateEventStatus("Event ended - Returned")
+                EventSettings.originalCFrame = nil
+            end
+            EventSettings.currentCFrame = nil
+        elseif not EventSettings.currentCFrame then
+            updateEventStatus("Waiting for event...")
+        end
+        
+        task.wait(0.2)
+    end
+    
+    setupWaterWalking(LocalPlayer.Character, nil, false)
+    if EventSettings.originalCFrame and LocalPlayer.Character then
+        LocalPlayer.Character:PivotTo(EventSettings.originalCFrame)
+        updateEventStatus("Auto Event disabled")
+    end
+    EventSettings.currentCFrame = nil
+    EventSettings.originalCFrame = nil
+end
+
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    if EventSettings.autoEventActive then
+        task.spawn(function()
+            local rootPart = newCharacter:WaitForChild("HumanoidRootPart", 5)
+            task.wait(0.3)
+            
+            if rootPart then
+                if EventSettings.currentCFrame then
+                    newCharacter:PivotTo(EventSettings.currentCFrame)
+                    setupWaterWalking(newCharacter, rootPart, true)
+                    task.wait(0.5)
+                    updateEventStatus("Respawned at event")
+                elseif EventSettings.originalCFrame then
+                    newCharacter:PivotTo(EventSettings.originalCFrame)
+                    setupWaterWalking(newCharacter, rootPart, true)
+                    updateEventStatus("Returned to farm location")
+                end
+            end
+        end)
+    end
 end)
 
--- MINIMIZE ICON
-local MinIcon = Instance.new("TextButton", ScreenGui)
-MinIcon.Size = UDim2.new(0,100,0,32)
-MinIcon.Position = UDim2.new(0,20,1,-50)
-MinIcon.Text = "☄️ Charles X"
-MinIcon.Visible = false
-MinIcon.BackgroundColor3 = BgColor
-MinIcon.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner",MinIcon)
-Instance.new("UIStroke",MinIcon).Color = MainBlue
+local evt = Teleport:AddSection("Auto Event Teleport")
 
-makeDraggable(MainFrame,TopBar)
-makeDraggable(MinIcon,MinIcon)
+evt:AddParagraph({
+    Title = "Event TP Info",
+    Icon = "info",
+    Content = "Make sure to select one option in Prioritize dropdown first. Otherwise, it will not work even if you selected one in Select Events dropdown.",
+})
 
-task.spawn(function()
-	local t=TweenService:Create(BarFill,TweenInfo.new(3),{Size=UDim2.new(1,0,1,0)})
-	t:Play()
-	t.Completed:Wait()
-	runMeteor=false
-	LoadingScreen:Destroy()
-	MainFrame.Visible=true
-	MainFrame.Size=UDim2.new(0,0,0,0)
-	TweenService:Create(MainFrame,TweenInfo.new(0.5,Enum.EasingStyle.Back),{Size=UDim2.new(0,400,0,260)}):Play()
-end)
+local priorityEventDropdown = evt:AddDropdown({
+    Title = "Prioritize Event",
+    Options = getAvailableEvents(),
+    Multi = false,
+    Default = {},
+    Callback = function(selected)
+        if type(selected) == "table" and #selected > 0 then
+            EventSettings.priorityEvent = selected[1]
+        elseif type(selected) == "string" then
+            EventSettings.priorityEvent = selected
+        else
+            EventSettings.priorityEvent = nil
+        end
+    end
+})
 
+local selectedEventsDropdown = evt:AddDropdown({
+    Title = "Select Events",
+    Options = getAvailableEvents(),
+    Multi = true,
+    Default = {},
+    Callback = function(selected)
+        EventSettings.selectedEvents = {}
+        for _, eventName in ipairs(selected) do
+            table.insert(EventSettings.selectedEvents, eventName)
+        end
+    end
+})
+
+local autoEventToggle = evt:AddToggle({
+    Title = "Auto Teleport to Event",
+    Default = false,
+    Callback = function(enabled)
+        EventSettings.autoEventActive = enabled
+        
+        if enabled then
+            if #EventSettings.selectedEvents == 0 and not EventSettings.priorityEvent then
+                EventSettings.autoEventActive = false
+                return
+            end
+            
+            EventSettings.originalCFrame = EventSettings.originalCFrame or 
+                                          getCharacterRoot(LocalPlayer.Character).CFrame
+            task.spawn(EventSettings.loop)
+        end
+    end
+})
+
+evt:AddButton({
+    Title = "Refresh Event List",
+    Callback = function()
+        local events = getAvailableEvents()
+        priorityEventDropdown:Refresh(events)
+        selectedEventsDropdown:Refresh(events)
+        AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "| Event List",
+            Content = "Refreshed! Found " .. #events .. " events",
+            Delay = 3
+        })
+    end
+})
+
+evt:AddButton({
+    Title = "Teleport to Event",
+    Callback = function()
+        if EventSettings.priorityEvent then
+            local eventPart = findEventLocation(EventSettings.priorityEvent)
+            if eventPart then
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local offset = EventSettings.offsets[EventSettings.priorityEvent] or 7
+                    hrp.CFrame = eventPart.CFrame + Vector3.new(0, offset, 0)
+                    AIKO:MakeNotify({
+                        Title = "@aikoware",
+                        Description = "| Teleported",
+                        Content = "Teleported to " .. EventSettings.priorityEvent,
+                        Delay = 3
+                    })
+                end
+            else
+                AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Error",
+                    Content = "Event not found or not active",
+                    Delay = 3
+                })
+            end
+        else
+            AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error",
+                Content = "No priority event selected",
+                Delay = 3
+            })
+        end
+    end
+})
+
+local ply = Teleport:AddSection("Player")
+
+local selectedPlayer = nil
+
+local playerDropdown = ply:AddDropdown({
+    Title = "Select Player",
+    Content = "",
+    Options = TeleportData.GetPlayerNames(Players, LocalPlayer),
+    Default = {},
+    Multi = false,
+    Callback = function(value)
+        if type(value) == "table" and #value > 0 then
+            selectedPlayer = value[1]
+        elseif type(value) == "string" then
+            selectedPlayer = value
+        else
+            selectedPlayer = nil
+        end
+    end
+})
+
+ply:AddButton({
+    Title = "Teleport To Player",
+    Content = "",
+    Callback = function()
+        if selectedPlayer then
+            local targetPlayer = Players:FindFirstChild(selectedPlayer)
+            local myChar = LocalPlayer.Character
+            local hrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            local targetChar = targetPlayer and targetPlayer.Character
+            local targetHRP = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+
+            if hrp and targetHRP then
+                hrp.CFrame = targetHRP.CFrame + Vector3.new(0,5,0)
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Teleported", 
+                    Content = "Teleported to " .. selectedPlayer, 
+                    Delay = 3
+                })
+            else
+                    AIKO:MakeNotify({
+                    Title = "@aikoware",
+                    Description = "| Error", 
+                    Content = "Player not found or not loaded", 
+                    Delay = 3
+                })
+            end
+        else
+                AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error", 
+                Content = "No player selected", 
+                Delay = 3
+            })
+        end
+    end
+})
+
+ply:AddButton({
+    Title = "Refresh Player List",
+    Content = "",
+    Callback = function()
+        playerDropdown:Refresh(TeleportData.GetPlayerNames(Players, LocalPlayer))
+            AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "Refreshed", 
+            Content = "Player list updated", 
+            Delay = 3
+        })
+    end
+})
+
+local autotrade = Trade:AddSection("Auto Trade")
+
+local TradeModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/a11bove/kdoaz/refs/heads/main/xzc/fishit/autotrademdl.lua"))()
+local Trade = TradeModule(Players, LocalPlayer, ReplicatedStorage, Library)
+
+local selectedTradePlayer = nil
+
+local tradePlayerDropdown = autotrade:AddDropdown({
+    Title = "Select Player",
+    Content = "",
+    Options = Trade.GetPlayerNames(),
+    Default = {},
+    Multi = false,
+    Callback = function(value)
+        if type(value) == "table" and #value > 0 then
+            selectedTradePlayer = value[1]
+        elseif type(value) == "string" then
+            selectedTradePlayer = value
+        else
+            selectedTradePlayer = nil
+        end
+    end
+})
+
+autotrade:AddButton({
+    Title = "Give Item",
+    Content = "",
+    Callback = function()
+        if selectedTradePlayer then
+            Trade.SendTradeRequest(selectedTradePlayer)
+        else
+                AIKO:MakeNotify({
+                Title = "@aikoware",
+                Description = "| Error",
+                Content = "No player selected",
+                Delay = 3
+            })
+        end
+    end
+})
+
+local autoAccept = autotrade:AddToggle({
+    Title = "Auto Accept Trade Requests",
+    Content = "",
+    Default = false,
+    Callback = function(state)
+        Trade.SetAutoAccept(state)
+    end
+})
+
+autotrade:AddButton({
+    Title = "Refresh Player List",
+    Icon = "refresh-cw",
+    Content = "",
+    Callback = function()
+        tradePlayerDropdown:Refresh(Trade.GetPlayerNames())
+            AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "| Refreshed", 
+            Content = "Player list updated", 
+            Delay = 3
+        })
+    end
+})
+
+local WebhookModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/a11bove/kdoaz/refs/heads/main/xzc/fishit/whmdl.lua"))()
+WebhookModule.Initialize()
+
+_G.WebhookRarities = _G.WebhookRarities or {}
+
+local webhookSection = Webhook:AddSection("Webhook Settings")
+
+local whurl = webhookSection:AddInput({
+    Title = "Webhook URL",
+    Default = _G.WebhookFlags.FishCaught.URL,
+    Placeholder = "Paste discord webhook...",
+    Callback = function(url)
+        local cleanUrl = WebhookModule.CleanWebhookURL(url)
+        if cleanUrl then
+            _G.WebhookFlags.FishCaught.URL = cleanUrl
+        end
+    end
+})
+
+local whfish = webhookSection:AddToggle({
+    Title = "Webhook Send",
+    Default = _G.WebhookFlags.FishCaught.Enabled,
+    Callback = function(enabled)
+        _G.WebhookFlags.FishCaught.Enabled = enabled
+    end
+})
+
+local whrarity = webhookSection:AddDropdown({
+    Title = "Rarity Filter",
+    Content = "Empty = All",
+    Options = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"},
+    Multi = true,
+    Default = {},
+    Callback = function(selected)
+        _G.WebhookRarities = {}
+        for i, rarity in ipairs(selected) do
+            _G.WebhookRarities[i] = rarity
+        end
+        
+        local count = #_G.WebhookRarities
+    end
+})
+
+webhookSection:AddButton({
+    Title = "Test Fish Webhook",
+    Callback = function()
+        local success, message = WebhookModule.SendTestWebhook()
+        AIKO:MakeNotify({
+            Title = "@aikoware",
+            Description = "| Test Webhook",
+            Content = message,
+            Delay = 3
+        })
+    end
+})
+
+webhookSection:AddDivider()
+
+local whname = webhookSection:AddInput({
+    Title = "Custom Name (Optional)",
+    Default = _G.WebhookCustomName or "",
+    Placeholder = "Leave blank to use Roblox name",
+    Callback = function(name)
+        _G.WebhookCustomName = name
+    end
+})
+
+local disconnectSection = Webhook:AddSection("Webhook Disconnect Alert")
+
+local dcurl = disconnectSection:AddInput({
+    Title = "Webhook URL",
+    Default = _G.WebhookFlags.Disconnect.URL,
+    Placeholder = "Paste disconnect webhook...",
+    Callback = function(url)
+        local cleanUrl = WebhookModule.CleanWebhookURL(url)
+        if cleanUrl then
+            _G.WebhookFlags.Disconnect.URL = cleanUrl
+        end
+    end
+})
+
+local dcid = disconnectSection:AddInput({
+    Title = "Discord ID (Optional)",
+    Default = "",
+    Placeholder = "Enter your Discord ID for ping...",
+    Callback = function(id)
+        if id and id ~= "" then
+            _G.DiscordPingID = "<@" .. id:gsub("%D", "") .. ">"
+        else
+            _G.DiscordPingID = ""
+        end
+    end
+})
+
+local dcname = disconnectSection:AddInput({
+    Title = "Custom Name (Optional)",
+    Default = _G.DisconnectCustomName or "",
+    Placeholder = "Custom name (blank = use Roblox name)",
+    Callback = function(name)
+        _G.DisconnectCustomName = name
+    end
+})
+
+local dcrj = disconnectSection:AddToggle({
+    Title = "Auto Rejoin On Disconnect",
+    Content = "Send webhook and rejoin automatically",
+    Default = _G.WebhookFlags.Disconnect.Enabled,
+    Callback = function(enabled)
+        _G.WebhookFlags.Disconnect.Enabled = enabled
+    end
+})
+
+disconnectSection:AddButton({
+    Title = "Test Disconnect Webhook",
+    Callback = function()
+        local success, message = WebhookModule.SendTestDisconnectWebhook()
+    end
+})
+
+local MiscModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/a11bove/kdoaz/refs/heads/main/xzc/fishit/miscmdl.lua"))()
+MiscModule:Initialize()
+
+local idn = Misc:AddSection("Hide Identity")
+
+local antiSolace = idn:AddToggle({
+    Title = "Enable Hide Identity",
+    Content = "",
+    Default = true,
+    Callback = function(enabled)
+        MiscModule.Identity:Toggle(enabled)
+    end
+})
+
+local uset = Misc:AddSection("User Settings")
+
+local WALKSPEED = uset:AddSlider({
+    Title = "Walkspeed",
+    Content = "",
+    Min = 18,
+    Max = 200,
+    Default = 18,
+    Callback = function(value)
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = value
+            end
+        end
+    end
+})
+
+uset:AddButton({
+    Title = "Reset Walkspeed",
+    Content = "Returns to default speed.",
+    Callback = function()
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = 18
+            end
+        end
+    end
+})
+
+local INFJUMP = uset:AddToggle({
+    Title = "Inf Jump",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        MiscModule.InfiniteJump:Toggle(enabled)
+    end
+})
+
+local perf = Misc:AddSection("Performance")
+
+perf:AddButton({
+    Title = "Low GFX",
+    Content = "Ultra low graphics mode.",
+    Callback = function()
+        MiscModule.Performance:LowGFX()
+    end
+})
+
+perf:AddToggle({
+    Title = "Hide Players",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        if enabled then
+            MiscModule.Performance:EnableHidePlayers()
+        else
+            MiscModule.Performance:DisableHidePlayers()
+        end
+    end
+})
+
+perf:AddToggle({
+    Title = "Remove Shadows",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        MiscModule.Performance:RemoveShadows(enabled)
+    end
+})
+
+perf:AddToggle({
+    Title = "Remove Water Reflections",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        MiscModule.Performance:RemoveWaterReflections(enabled)
+    end
+})
+
+perf:AddToggle({
+    Title = "Remove Particles",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        MiscModule.Performance:RemoveParticles(enabled)
+    end
+})
+
+perf:AddToggle({
+    Title = "Remove Terrain Decorations",
+    Content = "",
+    Default = false,
+    Callback = function(enabled)
+        MiscModule.Performance:RemoveTerrainDecorations(enabled)
+    end
+})
+
+local xpb = Misc:AddSection("Level Progress")
+
+local xpProgress = xpb:AddToggle({
+    Title = "Show Level Progress Bar",
+    Content = "",
+    Default = true,
+    Callback = function(state)
+        MiscModule.XPBar:Toggle(state)
+    end
+})
+
+local oxy = Misc:AddSection("Infinite Oxygen")
+
+local antiDrown = oxy:AddToggle({
+    Title = "Anti Drown",
+    Content = "",
+    Default = false,
+    Callback = function(state)
+        MiscModule.AntiDrown:Toggle(state)
+    end,
+})
+
+local zooom = Misc:AddSection("Max Zoom")
+
+function SetMaxZoom(distance)
+    local player = game:GetService("Players").LocalPlayer
+    if player then
+        player.CameraMaxZoomDistance = distance
+        player.CameraMinZoomDistance = distance
+    end
+end
+
+
+local maxzoom = zooom:AddInput({
+    Title = "Camera Max Zoom",
+    Default = "128",
+    Placeholder = "Enter zoom distance...",
+    Callback = function(value)
+        local zoomDistance = tonumber(value)
+        if zoomDistance and zoomDistance > 0 then
+            Player.CameraMaxZoomDistance = zoomDistance
+            Player.CameraMinZoomDistance = 0.5
+        end
+    end
+})
+
+function BypassRadar(enabled)
+    pcall(function()
+        NetworkFunctions.UpdateRadar:InvokeServer(enabled)
+    end)
+end
+
+local radsr = Misc:AddSection("Fishing Radar")
+
+local fishrad = radsr:AddToggle({
+    Title = "Fishing Radar",
+    Default = false,
+    Callback = function(enabled)
+        pcall(function()
+            NetworkFunctions.UpdateRadar:InvokeServer(enabled)
+        end)
+    end
+})
+
+-- INIT
+makeDraggable(MainFrame, TopBar)
+FishTab.Visible = true
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible=false MinIcon.Visible=true end)
-MinIcon.MouseButton1Click:Connect(function() MinIcon.Visible=false MainFrame.Visible=true end)
